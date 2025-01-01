@@ -24,7 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		78AAC50E2D24D654005E9D70 /* StackOverflow-Clone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "StackOverflow-Clone.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		78AAC50E2D24D654005E9D70 /* StackOverflow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StackOverflow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78AAC51F2D24D655005E9D70 /* StackOverflow-CloneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StackOverflow-CloneTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		78AAC5292D24D655005E9D70 /* StackOverflow-CloneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StackOverflow-CloneUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,7 +85,7 @@
 		78AAC50F2D24D654005E9D70 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				78AAC50E2D24D654005E9D70 /* StackOverflow-Clone.app */,
+				78AAC50E2D24D654005E9D70 /* StackOverflow.app */,
 				78AAC51F2D24D655005E9D70 /* StackOverflow-CloneTests.xctest */,
 				78AAC5292D24D655005E9D70 /* StackOverflow-CloneUITests.xctest */,
 			);
@@ -114,7 +114,7 @@
 			packageProductDependencies = (
 			);
 			productName = "StackOverflow-Clone";
-			productReference = 78AAC50E2D24D654005E9D70 /* StackOverflow-Clone.app */;
+			productReference = 78AAC50E2D24D654005E9D70 /* StackOverflow.app */;
 			productType = "com.apple.product-type.application";
 		};
 		78AAC51E2D24D655005E9D70 /* StackOverflow-CloneTests */ = {
@@ -408,7 +408,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.rezamadizadeh.StackOverflow-Clone";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = StackOverflow;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -435,7 +435,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.rezamadizadeh.StackOverflow-Clone";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = StackOverflow;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
