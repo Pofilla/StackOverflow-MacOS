@@ -106,7 +106,10 @@ struct NewQuestionView: View {
             answers: [],
             tags: tags.components(separatedBy: ",")
                 .map { $0.trimmingCharacters(in: .whitespaces) }
-                .filter { !$0.isEmpty }
+                .filter { !$0.isEmpty },
+            upvotes: 0,
+            downvotes: 0,
+            userVotes: [:]
         )
         questionsViewModel.addQuestion(question)
         dismiss()

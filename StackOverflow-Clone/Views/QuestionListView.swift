@@ -55,76 +55,99 @@ struct QuestionListView: View {
 }
 
 struct QuestionRowView: View {
+    @EnvironmentObject var viewModel: QuestionListViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     let question: Question
     
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Left side stats
-            VStack(spacing: 12) {
-                // Votes
-                VStack(spacing: 4) {
-                    Text("\(question.votes)")
-                        .font(.headline)
-                        .foregroundColor(Theme.textColor)
-                    Text("votes")
-                        .font(.caption2)
-                        .foregroundColor(Theme.secondaryColor)
-                }
-                
-                // Answers count
-                VStack(spacing: 4) {
-                    Text("\(question.answers.count)")
-                        .font(.headline)
-                        .foregroundColor(hasAcceptedAnswer ? Theme.darkOrange : Theme.textColor)
-                    Text("answers")
-                        .font(.caption2)
-                        .foregroundColor(Theme.secondaryColor)
-                }
-                .padding(6)
-                .background(hasAcceptedAnswer ? Theme.darkOrange.opacity(0.1) : Color.clear)
-                .cornerRadius(Theme.cornerRadius)
-            }
-            .frame(width: 70)
-            
-            // Question content
-            VStack(alignment: .leading, spacing: 8) {
-                Text(question.title)
-                    .font(.headline)
-                    .foregroundColor(Theme.primaryColor)
-                
-                Text(question.body)
-                    .font(.subheadline)
-                    .foregroundColor(Theme.textColor)
-                    .lineLimit(2)
-                
-                // Tags and metadata
-                HStack {
-                    // Tags
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(question.tags, id: \.self) { tag in
-                                Text(tag)
-                                    .tagStyle()
-                            }
-                        }
+        NavigationLink(destination: QuestionDetailView(question: question)) {
+            HStack(alignment: .top, spacing: 16) {
+                // Voting controls
+                VStack(spacing: 8) {
+                    Button(action: { vote(.upvote) }) {
+                        Image(systemName: "arrow.up")
+                            .foregroundColor(userVoteType == .upvote ? Theme.primaryColor : Theme.secondaryColor)
                     }
                     
-                    Spacer()
+                    Text("\(question.totalVotes)")
+                        .font(.headline)
                     
-                    // Author and date
-                    Text("asked \(timeAgo(question.createdDate))")
-                        .font(.caption)
-                        .foregroundColor(Theme.secondaryColor)
+                    Button(action: { vote(.downvote) }) {
+                        Image(systemName: "arrow.down")
+                            .foregroundColor(userVoteType == .downvote ? Theme.primaryColor : Theme.secondaryColor)
+                    }
+                }
+                .disabled(authViewModel.currentUser == nil)
+                
+                // Question content
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(question.title)
+                        .font(.headline)
+                        .foregroundColor(Theme.primaryColor)
+                    
+                    Text(question.body)
+                        .font(.subheadline)
+                        .foregroundColor(Theme.textColor)
+                        .lineLimit(2)
+                    
+                    // Tags and metadata
+                    HStack {
+                        // Tags
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                ForEach(question.tags, id: \.self) { tag in
+                                    Text(tag)
+                                        .tagStyle()
+                                }
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Answer count badge
+                        BadgeView(
+                            count: question.answers.count,
+                            color: Theme.darkOrange,
+                            icon: "text.bubble"
+                        )
+                        
+                        // Author and date
+                        Text("asked \(timeAgo(question.createdDate))")
+                            .font(.caption)
+                            .foregroundColor(Theme.secondaryColor)
+                    }
+                    
+                    // Add actions menu if user is author
+                    if authViewModel.currentUser?.id == question.authorId {
+                        Menu {
+                            Button(role: .destructive, action: deleteQuestion) {
+                                Label("Delete Question", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .foregroundColor(Theme.secondaryColor)
+                        }
+                    }
                 }
             }
         }
+        .buttonStyle(.plain)
         .padding()
         .background(Theme.cardBackground)
         .cornerRadius(Theme.cornerRadius)
     }
     
-    private var hasAcceptedAnswer: Bool {
-        question.answers.contains { $0.isAccepted }
+    private var userVoteType: VoteType {
+        guard let userId = authViewModel.currentUser?.id else { return .none }
+        return question.userVotes[userId] ?? .none
+    }
+    
+    private func vote(_ type: VoteType) {
+        viewModel.vote(on: question.id, voteType: type)
+    }
+    
+    private func deleteQuestion() {
+        viewModel.deleteQuestion(question.id, authorId: question.authorId)
     }
     
     private func timeAgo(_ date: Date) -> String {
@@ -148,4 +171,4 @@ struct StatView: View {
         }
         .frame(width: 60)
     }
-} 
+}
