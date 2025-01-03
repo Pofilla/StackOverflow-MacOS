@@ -27,14 +27,31 @@ struct QuestionListView: View {
             // Questions list
             ScrollView {
                 LazyVStack(spacing: 16) {
-                    ForEach(filteredQuestions) { question in
-                        QuestionRowView(question: question)
-                            .background(Theme.cardBackground)
-                            .cornerRadius(Theme.cornerRadius)
-                            .shadow(color: Theme.primaryColor.opacity(0.1), radius: 4)
+                    if viewModel.questions.isEmpty {
+                        Text("No questions yet")
+                            .foregroundColor(Theme.secondaryColor)
+                            .padding()
+                    } else {
+                        ForEach(viewModel.questions) { question in
+                            QuestionRowView(question: question)
+                                .environmentObject(viewModel)
+                                .background(Theme.cardBackground)
+                                .cornerRadius(Theme.cornerRadius)
+                                .shadow(color: Theme.primaryColor.opacity(0.1), radius: 4)
+                        }
                     }
                 }
                 .padding()
+            }
+        }
+        .onAppear {
+            print("QuestionListView appeared, loading questions...")
+            viewModel.loadQuestions()
+        }
+        .onChange(of: showNewQuestion) { newValue in
+            if !newValue {  // When sheet is dismissed
+                print("New question sheet dismissed, reloading questions...")
+                viewModel.loadQuestions()
             }
         }
         .background(Theme.backgroundColor)
@@ -47,10 +64,20 @@ struct QuestionListView: View {
                 }
                 .buttonStyle(Theme.buttonStyle())
             }
+            
+            ToolbarItem(placement: .automatic) {
+                Button(action: { viewModel.loadQuestions() }) {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                }
+            }
         }
         .sheet(isPresented: $showNewQuestion) {
             NewQuestionView(questionsViewModel: viewModel)
         }
+    }
+    
+    private func debugPrintQuestions() {
+        viewModel.debugPrintQuestions()
     }
 }
 

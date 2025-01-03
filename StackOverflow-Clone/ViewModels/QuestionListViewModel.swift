@@ -1,127 +1,153 @@
 import SwiftUI
 
+// Request structures
+struct QuestionRequest: Codable {
+    let action: String
+    let question: Question?
+    
+    init(action: String, question: Question? = nil) {
+        self.action = action
+        self.question = question
+    }
+}
+
+struct ServerResponse: Codable {
+    let status: String
+    let data: [Question]?
+    let message: String?
+}
+
+struct AnswerRequest: Codable {
+    let action: String
+    let answer: Answer
+    let questionId: String
+}
+
 class QuestionListViewModel: ObservableObject {
     @Published var questions: [Question] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let authViewModel: AuthViewModel
+    private let socketService = SocketService()
     
-    init(authViewModel: AuthViewModel = .init()) {
-        self.authViewModel = authViewModel
+    init() {
+        print("QuestionListViewModel initialized")
         loadQuestions()
     }
     
     func loadQuestions() {
+        print("⬇️ Loading questions...")
         isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.questions = self.getMockQuestions()
-            self.isLoading = false
+        
+        let request = QuestionRequest(action: "get_questions")
+        socketService.send(request) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                
+                switch result {
+                case .success(let data):
+                    do {
+                        print("📦 Received data: \(String(data: data, encoding: .utf8) ?? "")")
+                        let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
+                        if response.status == "success", let questions = response.data {
+                            self?.questions = questions
+                            print("✅ Loaded \(questions.count) questions")
+                        } else {
+                            print("❌ Server returned error: \(response.message ?? "Unknown error")")
+                        }
+                    } catch {
+                        print("❌ Decoding error: \(error)")
+                        self?.errorMessage = error.localizedDescription
+                    }
+                case .failure(let error):
+                    print("❌ Network error: \(error)")
+                    self?.errorMessage = error.localizedDescription
+                }
+            }
         }
     }
     
     func addQuestion(_ question: Question) {
-        questions.insert(question, at: 0)
-    }
-    
-    private func getMockQuestions() -> [Question] {
-        return [
-            Question(
-                id: "1",
-                title: "How to use async/await in SwiftUI?",
-                body: "I'm trying to understand how to properly use async/await in SwiftUI. Can someone explain the basic concepts?",
-                authorId: "user1",
-                createdDate: Date().addingTimeInterval(-3600),
-                votes: 10,
-                answers: [],
-                tags: ["swift", "swiftui", "async"],
-                upvotes: 7,
-                downvotes: 3,
-                userVotes: [:]
-            ),
-            Question(
-                id: "2",
-                title: "Best practices for MVVM in SwiftUI",
-                body: "What are the best practices for implementing MVVM in SwiftUI?",
-                authorId: "user2",
-                createdDate: Date().addingTimeInterval(-7200),
-                votes: 15,
-                answers: [
-                    Answer(
-                        id: "answer1",
-                        questionId: "2",
-                        authorId: "user3",
-                        body: "Here's a good example...",
-                        createdDate: Date(),
-                        votes: 5,
-                        isAccepted: true
-                    )
-                ],
-                tags: ["swift", "swiftui", "mvvm"],
-                upvotes: 12,
-                downvotes: 3,
-                userVotes: [:]
-            )
-        ]
-    }
-    
-    func deleteQuestion(_ questionId: String, authorId: String) {
-        guard let currentUserId = authViewModel.currentUser?.id,
-              currentUserId == authorId else { return }
+        print("⬆️ Adding question: \(question.title)")
+        let request = QuestionRequest(action: "add_question", question: question)
         
-        questions.removeAll { $0.id == questionId }
+        socketService.send(request) { [weak self] result in
+            switch result {
+            case .success(let data):
+                do {
+                    print("📦 Server response for add: \(String(data: data, encoding: .utf8) ?? "")")
+                    let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
+                    
+                    DispatchQueue.main.async {
+                        if response.status == "success" {
+                            print("✅ Question added successfully")
+                            if let updatedQuestions = response.data {
+                                self?.questions = updatedQuestions
+                                print("✅ Updated questions list with \(updatedQuestions.count) questions")
+                            } else {
+                                self?.loadQuestions()
+                            }
+                        } else {
+                            print("❌ Server returned error: \(response.message ?? "Unknown error")")
+                            self?.errorMessage = response.message
+                        }
+                    }
+                } catch {
+                    print("❌ Decoding error: \(error)")
+                    self?.errorMessage = error.localizedDescription
+                }
+            case .failure(let error):
+                print("❌ Network error: \(error)")
+                DispatchQueue.main.async {
+                    self?.errorMessage = error.localizedDescription
+                }
+            }
+        }
     }
     
     func addAnswer(_ answer: Answer, to questionId: String) {
-        guard let index = questions.firstIndex(where: { $0.id == questionId }) else { return }
+        let request = AnswerRequest(action: "add_answer", answer: answer, questionId: questionId)
         
-        // Create a new copy of the questions array
-        var updatedQuestions = questions
-        updatedQuestions[index].answers.append(answer)
-        
-        // Update the published property to trigger UI refresh
-        self.questions = updatedQuestions
-        
-        // Force a UI update
-        objectWillChange.send()
+        socketService.send(request) { [weak self] result in
+            switch result {
+            case .success:
+                self?.loadQuestions()  // Refresh the list
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self?.errorMessage = error.localizedDescription
+                }
+            }
+        }
     }
     
     func deleteAnswer(_ answerId: String, from questionId: String, authorId: String) {
-        guard let currentUserId = authViewModel.currentUser?.id,
-              currentUserId == authorId,
-              let questionIndex = questions.firstIndex(where: { $0.id == questionId }) else { return }
-        
-        // Create a new copy of the questions array
-        var updatedQuestions = questions
-        updatedQuestions[questionIndex].answers.removeAll { $0.id == answerId }
-        
-        // Update the published property to trigger UI refresh
-        self.questions = updatedQuestions
-        
-        // Force a UI update
-        objectWillChange.send()
+        guard let questionIndex = questions.firstIndex(where: { $0.id == questionId }) else { return }
+        questions[questionIndex].answers.removeAll { $0.id == answerId }
+    }
+    
+    func deleteQuestion(_ questionId: String, authorId: String) {
+        questions.removeAll { $0.id == questionId }
     }
     
     func vote(on questionId: String, voteType: VoteType) {
-        guard let currentUserId = authViewModel.currentUser?.id,
-              let index = questions.firstIndex(where: { $0.id == questionId }) else { return }
+        guard let index = questions.firstIndex(where: { $0.id == questionId }) else { return }
         
-        let previousVote = questions[index].userVotes[currentUserId] ?? .none
-        
-        // Remove previous vote
-        switch previousVote {
-        case .upvote: questions[index].upvotes -= 1
-        case .downvote: questions[index].downvotes -= 1
-        case .none: break
-        }
-        
-        // Add new vote
         switch voteType {
-        case .upvote: questions[index].upvotes += 1
-        case .downvote: questions[index].downvotes += 1
-        case .none: break
+        case .upvote:
+            questions[index].upvotes += 1
+        case .downvote:
+            questions[index].downvotes += 1
+        case .none:
+            break
         }
         
-        questions[index].userVotes[currentUserId] = voteType
+        questions[index].votes = questions[index].upvotes - questions[index].downvotes
     }
+    
+    func debugPrintQuestions() {
+        let request = QuestionRequest(action: "debug_print")
+        socketService.send(request) { _ in }
+    }
+    
+    // Similar implementations for other actions
 } 

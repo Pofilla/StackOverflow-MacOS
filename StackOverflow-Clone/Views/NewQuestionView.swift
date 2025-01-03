@@ -96,11 +96,13 @@ struct NewQuestionView: View {
     }
 
     private func submitQuestion() {
+        print("📝 Submitting new question: \(title)")
+        
         let question = Question(
             id: UUID().uuidString,
             title: title,
             body: questionBody,
-            authorId: "user1", // This should come from authenticated user
+            authorId: "anonymous",
             createdDate: Date(),
             votes: 0,
             answers: [],
@@ -111,6 +113,8 @@ struct NewQuestionView: View {
             downvotes: 0,
             userVotes: [:]
         )
+        
+        print("📦 Created question object: \(question)")
         questionsViewModel.addQuestion(question)
         dismiss()
     }

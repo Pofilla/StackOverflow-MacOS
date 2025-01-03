@@ -59,12 +59,6 @@ struct AddAnswerView: View {
     }
     
     private func submitAnswer() {
-        guard let userId = authViewModel.currentUser?.id else {
-            showError = true
-            errorMessage = "You must be logged in to post an answer"
-            return
-        }
-        
         guard !answerBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             showError = true
             errorMessage = "Answer cannot be empty"
@@ -74,7 +68,7 @@ struct AddAnswerView: View {
         let answer = Answer(
             id: UUID().uuidString,
             questionId: questionId,
-            authorId: userId,
+            authorId: "anonymous",
             body: answerBody.trimmingCharacters(in: .whitespacesAndNewlines),
             createdDate: Date(),
             votes: 0,

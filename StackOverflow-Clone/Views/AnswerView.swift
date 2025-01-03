@@ -2,8 +2,7 @@ import SwiftUI
 import Foundation
 
 struct AnswerView: View {
-    @EnvironmentObject var viewModel: QuestionListViewModel
-    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject private var viewModel: QuestionListViewModel
     let answer: Answer
     let questionId: String
     
@@ -20,11 +19,12 @@ struct AnswerView: View {
                     .font(.caption)
                     .foregroundColor(Theme.secondaryColor)
                 
-                if answer.authorId == authViewModel.currentUser?.id {
-                    Button(role: .destructive, action: deleteAnswer) {
+                if answer.authorId == "anonymous" {
+                    Button(action: { deleteAnswer() }) {
                         Label("Delete", systemImage: "trash")
                             .font(.caption)
                     }
+                    .foregroundColor(.red)
                 }
             }
         }
@@ -44,18 +44,21 @@ struct AnswerView: View {
     }
 }
 
+// Preview provider
 #Preview {
-    let previewAnswer = Answer(
+    let sampleAnswer = Answer(
         id: "1",
         questionId: "1",
-        authorId: "user1",
+        authorId: "anonymous",
         body: "This is a sample answer",
         createdDate: Date(),
         votes: 0,
         isAccepted: false
     )
     
-    return AnswerView(answer: previewAnswer, questionId: "1")
+    return AnswerView(answer: sampleAnswer, questionId: "1")
         .environmentObject(QuestionListViewModel())
         .environmentObject(AuthViewModel())
+        .padding()
+        .background(Theme.backgroundColor)
 } 
