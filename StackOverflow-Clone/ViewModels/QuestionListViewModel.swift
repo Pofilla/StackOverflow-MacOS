@@ -166,7 +166,47 @@ class QuestionListViewModel: ObservableObject {
     }
     
     func deleteQuestion(_ questionId: String, authorId: String) {
-        questions.removeAll { $0.id == questionId }
+        print("🗑️ Deleting question: \(questionId)")
+        
+        let request = DeleteQuestionRequest(
+            action: "delete_question",
+            questionId: questionId,
+            authorId: authorId
+        )
+        
+        // Send delete request to server first
+        socketService.send(request) { [weak self] result in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        if response.status == "success" {
+                            print("✅ Question deleted successfully on server")
+                            // Update local state with server response
+                            if let updatedQuestions = response.data {
+                                self?.questions = updatedQuestions
+                            }
+                        } else {
+                            print("❌ Server returned error: \(response.message ?? "Unknown error")")
+                            self?.errorMessage = response.message
+                            // Refresh questions to ensure consistency
+                            self?.loadQuestions()
+                        }
+                    }
+                } catch {
+                    print("❌ Decoding error: \(error)")
+                    self?.errorMessage = error.localizedDescription
+                    self?.loadQuestions()
+                }
+            case .failure(let error):
+                print("❌ Failed to delete question: \(error)")
+                DispatchQueue.main.async {
+                    self?.errorMessage = error.localizedDescription
+                    self?.loadQuestions()
+                }
+            }
+        }
     }
     
     func vote(on questionId: String, voteType: VoteType) {
@@ -187,6 +227,46 @@ class QuestionListViewModel: ObservableObject {
     func debugPrintQuestions() {
         let request = QuestionRequest(action: "debug_print")
         socketService.send(request) { _ in }
+    }
+    
+    func filterQuestions(_ request: FilterQuestionsRequest) {
+        socketService.send(request) { [weak self] result in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
+                    if response.status == "success", let questions = response.data {
+                        DispatchQueue.main.async {
+                            self?.questions = questions
+                        }
+                    }
+                } catch {
+                    print("❌ Decoding error: \(error)")
+                }
+            case .failure(let error):
+                print("❌ Network error: \(error)")
+            }
+        }
+    }
+    
+    func sortQuestions(_ request: SortQuestionsRequest) {
+        socketService.send(request) { [weak self] result in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
+                    if response.status == "success", let questions = response.data {
+                        DispatchQueue.main.async {
+                            self?.questions = questions
+                        }
+                    }
+                } catch {
+                    print("❌ Decoding error: \(error)")
+                }
+            case .failure(let error):
+                print("❌ Network error: \(error)")
+            }
+        }
     }
     
     // Similar implementations for other actions

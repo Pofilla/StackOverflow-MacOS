@@ -6,7 +6,7 @@ struct MainView: View {
             Sidebar()
                 .background(Theme.backgroundColor)
         } detail: {
-            QuestionListView()
+            Text("Select an item")
                 .background(Theme.backgroundColor)
         }
     }

@@ -2,12 +2,18 @@ import SwiftUI
 
 struct Sidebar: View {
     @State private var selection: String? = "home"
+    @State private var showNewQuestion = false
+    @EnvironmentObject private var viewModel: QuestionListViewModel
     
     var body: some View {
         List(selection: $selection) {
             Section("PUBLIC") {
                 NavigationLink(value: "home") {
-                    Label("Questions", systemImage: "list.bullet")
+                    Label("Home", systemImage: "house.fill")
+                }
+                
+                NavigationLink(value: "questions") {
+                    Label("Questions", systemImage: "text.bubble")
                 }
                 
                 NavigationLink(value: "tags") {
@@ -34,20 +40,51 @@ struct Sidebar: View {
         .listStyle(.sidebar)
         .tint(Theme.primaryColor)
         .navigationDestination(for: String.self) { destination in
-            switch destination {
-            case "home":
-                QuestionListView()
-            case "tags":
-                Text("Tags View")
-            case "users":
-                Text("Users View")
-            case "collectives":
-                Text("Explore Collectives View")
-            case "teams":
-                Text("Create Team View")
-            default:
-                Text("View not found")
+            VStack(spacing: 0) {
+                // Only show header for questions-related views
+                if destination == "home" || destination == "questions" {
+                    // Header section with Ask Question button
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("All Questions")
+                                .font(.title2.bold())
+                            Text("\(viewModel.questions.count) questions")
+                                .font(.subheadline)
+                                .foregroundColor(Theme.secondaryColor)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: { showNewQuestion = true }) {
+                            Label("Ask Question", systemImage: "plus.circle.fill")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(Theme.primaryButtonStyle())
+                    }
+                    .padding()
+                    .background(Theme.cardBackground)
+                }
+                
+                // Content based on destination
+                switch destination {
+                case "home", "questions":
+                    QuestionListView(showNewQuestion: $showNewQuestion)
+                case "tags":
+                    TagsView()
+                case "users":
+                    Text("Users View")
+                case "collectives":
+                    Text("Explore Collectives View")
+                case "teams":
+                    Text("Create Team View")
+                default:
+                    Text("View not found")
+                }
             }
+            .background(Theme.backgroundColor)
+        }
+        .sheet(isPresented: $showNewQuestion) {
+            NewQuestionView(questionsViewModel: viewModel)
         }
     }
 }

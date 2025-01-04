@@ -98,7 +98,6 @@ struct QuestionDetailView: View {
     }
 }
 
-// New view for adding answers in a sheet
 struct AddAnswerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var viewModel: QuestionListViewModel
