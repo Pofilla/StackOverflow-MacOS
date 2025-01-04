@@ -54,7 +54,7 @@ class StackOverflowServer:
                 if not data:
                     print(f"Client {address} disconnected")
                     break
-
+                
                 print(f"Received from {address}: {data}")
                 try:
                     request = json.loads(data.decode('utf-8'))
@@ -65,9 +65,8 @@ class StackOverflowServer:
                 except json.JSONDecodeError as e:
                     print(f"JSON decode error: {e}")
                     break
-                except Exception as e:
-                    print(f"Error handling request: {e}")
-                    break
+        except Exception as e:
+            print(f"Error handling request: {e}")
         finally:
             print(f"Closing connection with {address}")
             client_socket.close()
@@ -110,7 +109,24 @@ class StackOverflowServer:
                         self.save_questions()  # Save after adding answer
                         break
                 
-                return {'status': 'success'}
+                return {'status': 'success', 'data': self.questions}
+
+            elif action == 'delete_answer':
+                answer_id = request.get('answer_id')
+                question_id = request.get('question_id')
+                
+                print(f"Deleting answer {answer_id} from question {question_id}")
+                for question in self.questions:
+                    if question['id'] == question_id:
+                        question['answers'] = [a for a in question['answers'] if a['id'] != answer_id]
+                        break
+                
+                self.save_questions()
+                return {
+                    'status': 'success',
+                    'data': self.questions,
+                    'message': 'Answer deleted successfully'
+                }
             
             elif action == 'vote':
                 question_id = request.get('questionId')

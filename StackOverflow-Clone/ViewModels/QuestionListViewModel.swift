@@ -121,8 +121,48 @@ class QuestionListViewModel: ObservableObject {
     }
     
     func deleteAnswer(_ answerId: String, from questionId: String, authorId: String) {
-        guard let questionIndex = questions.firstIndex(where: { $0.id == questionId }) else { return }
-        questions[questionIndex].answers.removeAll { $0.id == answerId }
+        print("🗑️ Deleting answer: \(answerId) from question: \(questionId)")
+        
+        let request = DeleteAnswerRequest(
+            action: "delete_answer",
+            answerId: answerId,
+            questionId: questionId,
+            authorId: authorId
+        )
+        
+        // Send delete request to server first
+        socketService.send(request) { [weak self] result in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        if response.status == "success" {
+                            print("✅ Answer deleted successfully on server")
+                            // Update local state with server response
+                            if let updatedQuestions = response.data {
+                                self?.questions = updatedQuestions
+                            }
+                        } else {
+                            print("❌ Server returned error: \(response.message ?? "Unknown error")")
+                            self?.errorMessage = response.message
+                            // Refresh questions to ensure consistency
+                            self?.loadQuestions()
+                        }
+                    }
+                } catch {
+                    print("❌ Decoding error: \(error)")
+                    self?.errorMessage = error.localizedDescription
+                    self?.loadQuestions()
+                }
+            case .failure(let error):
+                print("❌ Failed to delete answer: \(error)")
+                DispatchQueue.main.async {
+                    self?.errorMessage = error.localizedDescription
+                    self?.loadQuestions()
+                }
+            }
+        }
     }
     
     func deleteQuestion(_ questionId: String, authorId: String) {

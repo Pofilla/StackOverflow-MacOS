@@ -5,6 +5,7 @@ struct AnswerView: View {
     @EnvironmentObject private var viewModel: QuestionListViewModel
     let answer: Answer
     let questionId: String
+    @State private var isDeleting = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -21,20 +22,25 @@ struct AnswerView: View {
                 
                 if answer.authorId == "anonymous" {
                     Button(action: { deleteAnswer() }) {
-                        Label("Delete", systemImage: "trash")
+                        Label(isDeleting ? "Deleting..." : "Delete", 
+                              systemImage: isDeleting ? "hourglass" : "trash")
                             .font(.caption)
                     }
                     .foregroundColor(.red)
+                    .disabled(isDeleting)
                 }
             }
         }
         .padding()
         .background(Theme.cardBackground)
         .cornerRadius(Theme.cornerRadius)
+        .opacity(isDeleting ? 0.6 : 1)
     }
     
     private func deleteAnswer() {
+        isDeleting = true
         viewModel.deleteAnswer(answer.id, from: questionId, authorId: answer.authorId)
+        // The deletion state will be reset when the view is recreated after the answer list updates
     }
     
     private func timeAgo(_ date: Date) -> String {

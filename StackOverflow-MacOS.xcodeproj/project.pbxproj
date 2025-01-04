@@ -25,8 +25,8 @@
 
 /* Begin PBXFileReference section */
 		78AAC50E2D24D654005E9D70 /* StackOverflow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StackOverflow.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		78AAC51F2D24D655005E9D70 /* StackOverflow-CloneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StackOverflow-CloneTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		78AAC5292D24D655005E9D70 /* StackOverflow-CloneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StackOverflow-CloneUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		78AAC51F2D24D655005E9D70 /* StackOverflow-MacOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StackOverflow-MacOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		78AAC5292D24D655005E9D70 /* StackOverflow-MacOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StackOverflow-MacOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -86,8 +86,8 @@
 			isa = PBXGroup;
 			children = (
 				78AAC50E2D24D654005E9D70 /* StackOverflow.app */,
-				78AAC51F2D24D655005E9D70 /* StackOverflow-CloneTests.xctest */,
-				78AAC5292D24D655005E9D70 /* StackOverflow-CloneUITests.xctest */,
+				78AAC51F2D24D655005E9D70 /* StackOverflow-MacOSTests.xctest */,
+				78AAC5292D24D655005E9D70 /* StackOverflow-MacOSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,9 +95,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		78AAC50D2D24D654005E9D70 /* StackOverflow-Clone */ = {
+		78AAC50D2D24D654005E9D70 /* StackOverflow-MacOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 78AAC5332D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-Clone" */;
+			buildConfigurationList = 78AAC5332D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-MacOS" */;
 			buildPhases = (
 				78AAC50A2D24D654005E9D70 /* Sources */,
 				78AAC50B2D24D654005E9D70 /* Frameworks */,
@@ -110,16 +110,16 @@
 			fileSystemSynchronizedGroups = (
 				78AAC5102D24D654005E9D70 /* StackOverflow-Clone */,
 			);
-			name = "StackOverflow-Clone";
+			name = "StackOverflow-MacOS";
 			packageProductDependencies = (
 			);
 			productName = "StackOverflow-Clone";
 			productReference = 78AAC50E2D24D654005E9D70 /* StackOverflow.app */;
 			productType = "com.apple.product-type.application";
 		};
-		78AAC51E2D24D655005E9D70 /* StackOverflow-CloneTests */ = {
+		78AAC51E2D24D655005E9D70 /* StackOverflow-MacOSTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 78AAC5362D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-CloneTests" */;
+			buildConfigurationList = 78AAC5362D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-MacOSTests" */;
 			buildPhases = (
 				78AAC51B2D24D655005E9D70 /* Sources */,
 				78AAC51C2D24D655005E9D70 /* Frameworks */,
@@ -133,16 +133,16 @@
 			fileSystemSynchronizedGroups = (
 				78AAC5222D24D655005E9D70 /* StackOverflow-CloneTests */,
 			);
-			name = "StackOverflow-CloneTests";
+			name = "StackOverflow-MacOSTests";
 			packageProductDependencies = (
 			);
 			productName = "StackOverflow-CloneTests";
-			productReference = 78AAC51F2D24D655005E9D70 /* StackOverflow-CloneTests.xctest */;
+			productReference = 78AAC51F2D24D655005E9D70 /* StackOverflow-MacOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		78AAC5282D24D655005E9D70 /* StackOverflow-CloneUITests */ = {
+		78AAC5282D24D655005E9D70 /* StackOverflow-MacOSUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 78AAC5392D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-CloneUITests" */;
+			buildConfigurationList = 78AAC5392D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-MacOSUITests" */;
 			buildPhases = (
 				78AAC5252D24D655005E9D70 /* Sources */,
 				78AAC5262D24D655005E9D70 /* Frameworks */,
@@ -156,11 +156,11 @@
 			fileSystemSynchronizedGroups = (
 				78AAC52C2D24D655005E9D70 /* StackOverflow-CloneUITests */,
 			);
-			name = "StackOverflow-CloneUITests";
+			name = "StackOverflow-MacOSUITests";
 			packageProductDependencies = (
 			);
 			productName = "StackOverflow-CloneUITests";
-			productReference = 78AAC5292D24D655005E9D70 /* StackOverflow-CloneUITests.xctest */;
+			productReference = 78AAC5292D24D655005E9D70 /* StackOverflow-MacOSUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -186,7 +186,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 78AAC5092D24D654005E9D70 /* Build configuration list for PBXProject "StackOverflow-Clone" */;
+			buildConfigurationList = 78AAC5092D24D654005E9D70 /* Build configuration list for PBXProject "StackOverflow-MacOS" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -200,9 +200,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				78AAC50D2D24D654005E9D70 /* StackOverflow-Clone */,
-				78AAC51E2D24D655005E9D70 /* StackOverflow-CloneTests */,
-				78AAC5282D24D655005E9D70 /* StackOverflow-CloneUITests */,
+				78AAC50D2D24D654005E9D70 /* StackOverflow-MacOS */,
+				78AAC51E2D24D655005E9D70 /* StackOverflow-MacOSTests */,
+				78AAC5282D24D655005E9D70 /* StackOverflow-MacOSUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,12 +258,12 @@
 /* Begin PBXTargetDependency section */
 		78AAC5212D24D655005E9D70 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 78AAC50D2D24D654005E9D70 /* StackOverflow-Clone */;
+			target = 78AAC50D2D24D654005E9D70 /* StackOverflow-MacOS */;
 			targetProxy = 78AAC5202D24D655005E9D70 /* PBXContainerItemProxy */;
 		};
 		78AAC52B2D24D655005E9D70 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 78AAC50D2D24D654005E9D70 /* StackOverflow-Clone */;
+			target = 78AAC50D2D24D654005E9D70 /* StackOverflow-MacOS */;
 			targetProxy = 78AAC52A2D24D655005E9D70 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -457,7 +457,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StackOverflow-Clone.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StackOverflow-Clone";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StackOverflow-MacOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StackOverflow-MacOS";
 			};
 			name = Debug;
 		};
@@ -475,7 +475,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StackOverflow-Clone.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StackOverflow-Clone";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StackOverflow-MacOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StackOverflow-MacOS";
 			};
 			name = Release;
 		};
@@ -514,7 +514,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		78AAC5092D24D654005E9D70 /* Build configuration list for PBXProject "StackOverflow-Clone" */ = {
+		78AAC5092D24D654005E9D70 /* Build configuration list for PBXProject "StackOverflow-MacOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				78AAC5312D24D655005E9D70 /* Debug */,
@@ -523,7 +523,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		78AAC5332D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-Clone" */ = {
+		78AAC5332D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-MacOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				78AAC5342D24D655005E9D70 /* Debug */,
@@ -532,7 +532,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		78AAC5362D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-CloneTests" */ = {
+		78AAC5362D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-MacOSTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				78AAC5372D24D655005E9D70 /* Debug */,
@@ -541,7 +541,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		78AAC5392D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-CloneUITests" */ = {
+		78AAC5392D24D655005E9D70 /* Build configuration list for PBXNativeTarget "StackOverflow-MacOSUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				78AAC53A2D24D655005E9D70 /* Debug */,
