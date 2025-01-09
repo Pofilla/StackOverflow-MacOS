@@ -407,6 +407,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.rezamadizadeh.StackOverflow-MacOS";
 				PRODUCT_NAME = StackOverflow;
@@ -435,6 +436,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.rezamadizadeh.StackOverflow-MacOS";
 				PRODUCT_NAME = StackOverflow;

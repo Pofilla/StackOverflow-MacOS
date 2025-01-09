@@ -3,6 +3,7 @@ import SwiftUI
 struct CustomToolbar: View {
     @Binding var searchText: String
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @State private var isLoggedIn: Bool = UserDefaults.standard.bool(forKey: "isLoggedIn")
     
     var body: some View {
         HStack(spacing: 16) {
@@ -12,6 +13,7 @@ struct CustomToolbar: View {
                     .foregroundColor(Theme.secondaryColor)
                 TextField("Search questions...", text: $searchText)
                     .textFieldStyle(.plain)
+                    .foregroundColor(Theme.textColor)
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
@@ -27,33 +29,22 @@ struct CustomToolbar: View {
             Spacer()
             
             // User menu
-            if let user = authViewModel.currentUser {
-                Menu {
-                    Text("Signed in as \(user.username)")
-                        .font(.caption)
-                    Divider()
-                    Button("Profile") { }
-                    Button("Settings") { }
-                    Divider()
-                    Button("Sign Out") {
-                        authViewModel.signOut()
-                    }
-                } label: {
-                    HStack {
-                        Text(user.username)
-                            .foregroundColor(Theme.textColor)
-                        Image(systemName: "person.circle.fill")
-                            .foregroundColor(Theme.primaryColor)
-                    }
+            if isLoggedIn {
+                Button("View Profile") {
+                    print("Navigating to Profile")
                 }
+                .buttonStyle(Theme.buttonStyle())
             } else {
-                Button("Sign In") {
-                    authViewModel.showAuthSheet = true
+                Button("Login") {
+                    print("Login button clicked!")
+                    isLoggedIn = true
+                    UserDefaults.standard.set(true, forKey: "isLoggedIn")
                 }
                 .buttonStyle(Theme.buttonStyle())
             }
         }
         .padding(.horizontal)
         .frame(height: 44)
+        .background(Theme.backgroundColor)
     }
 } 

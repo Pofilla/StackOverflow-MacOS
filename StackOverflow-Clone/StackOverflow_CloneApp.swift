@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct StackOverflow_CloneApp: App {
-    // Initialize view models that need to be shared across the app
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false // Store the user's preference
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var questionListViewModel = QuestionListViewModel()
     
@@ -18,6 +18,7 @@ struct StackOverflow_CloneApp: App {
             MainView()
                 .environmentObject(authViewModel)
                 .environmentObject(questionListViewModel)
+                .preferredColorScheme(isDarkMode ? .dark : .light) // Apply the selected color scheme
         }
     }
 }

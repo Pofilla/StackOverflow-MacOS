@@ -49,9 +49,11 @@ struct TagsView: View {
                     }
                 }
                 .padding()
+                .background(Theme.backgroundColor)
             }
         }
         .background(Theme.backgroundColor)
+        .cornerRadius(Theme.cornerRadius)
     }
 }
 
@@ -76,11 +78,11 @@ struct TagCard: View {
                 
                 Spacer()
                 
-                Button("View questions") {
-                    // TODO: Add navigation to filtered questions
+                NavigationLink(destination: FilteredQuestionsView(tag: name)) {
+                    Text("View questions")
+                        .font(.caption)
+                        .foregroundColor(Theme.primaryColor)
                 }
-                .font(.caption)
-                .foregroundColor(Theme.primaryColor)
             }
         }
         .padding()

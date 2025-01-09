@@ -6,6 +6,8 @@ struct AnswerView: View {
     let answer: Answer
     let questionId: String
     @State private var isDeleting = false
+    @State private var showDeleteConfirmation = false
+    @State private var isHovering = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -21,13 +23,26 @@ struct AnswerView: View {
                     .foregroundColor(Theme.secondaryColor)
                 
                 if answer.authorId == "anonymous" {
-                    Button(action: { deleteAnswer() }) {
-                        Label(isDeleting ? "Deleting..." : "Delete", 
-                              systemImage: isDeleting ? "hourglass" : "trash")
-                            .font(.caption)
+                    Button(action: {
+                        showDeleteConfirmation = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
                     }
-                    .foregroundColor(.red)
-                    .disabled(isDeleting)
+                    .buttonStyle(PlainButtonStyle())
+                    .onHover { hovering in
+                        isHovering = hovering
+                    }
+                    .alert(isPresented: $showDeleteConfirmation) {
+                        Alert(
+                            title: Text("Confirm Deletion"),
+                            message: Text("Are you sure you want to delete this answer?"),
+                            primaryButton: .destructive(Text("Delete")) {
+                                deleteAnswer()
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
                 }
             }
         }
@@ -40,7 +55,6 @@ struct AnswerView: View {
     private func deleteAnswer() {
         isDeleting = true
         viewModel.deleteAnswer(answer.id, from: questionId, authorId: answer.authorId)
-        // The deletion state will be reset when the view is recreated after the answer list updates
     }
     
     private func timeAgo(_ date: Date) -> String {
@@ -62,7 +76,7 @@ struct AnswerView: View {
         isAccepted: false
     )
     
-    return AnswerView(answer: sampleAnswer, questionId: "1")
+    AnswerView(answer: sampleAnswer, questionId: "1")
         .environmentObject(QuestionListViewModel())
         .environmentObject(AuthViewModel())
         .padding()

@@ -31,95 +31,114 @@ struct QuestionListView: View {
                 question.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
             }
         
-        return sorted(filtered)
+        return filtered
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Search and filter section
-            VStack(spacing: 12) {
-                // Search bar
-                SearchBar(text: $searchText) {
-                    let request = FilterQuestionsRequest(
-                        action: "filter_questions",
-                        searchText: searchText
-                    )
-                    viewModel.filterQuestions(request)
-                }
-                .padding(.horizontal)
-                
-                Divider()
-                    .background(Theme.secondaryColor.opacity(0.2))
-                
-                // Sort options with better visual hierarchy
+        ZStack {
+            VStack(spacing: 0) {
+                // Search and sort section
                 HStack {
-                    Text("Sort by:")
-                        .font(.subheadline)
-                        .foregroundColor(Theme.secondaryColor)
+                    // Search bar
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(Theme.secondaryColor)
+                            .padding(.leading, 8) // Padding for the icon
+                        
+                        TextField("Search questions...", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .foregroundColor(Theme.textColor)
+                            .padding(8)
+                            .padding(.leading, 0) // Remove leading padding to align with icon
+                            .background(Theme.cardBackground)
+                            .cornerRadius(8)
+                            .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2, x: 0, y: 2)
+                    }
+                    .frame(width: 300) // Set a fixed width for the search bar
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(SortOption.allCases, id: \.self) { option in
-                                Button(action: {
-                                    sortOption = option
-                                    let request = SortQuestionsRequest(
-                                        action: "sort_questions",
-                                        sortBy: option.requestValue,
-                                        searchText: searchText.isEmpty ? nil : searchText
-                                    )
-                                    viewModel.sortQuestions(request)
-                                }) {
-                                    Text(option.rawValue)
-                                        .font(.subheadline)
-                                }
-                                .buttonStyle(PillButtonStyle(isSelected: sortOption == option))
+                    Spacer() // Push the sorting menu to the right
+                    
+                    // Sort options
+                    Menu {
+                        ForEach(SortOption.allCases, id: \.self) { option in
+                            Button(action: {
+                                sortOption = option
+                                let request = SortQuestionsRequest(
+                                    action: "sort_questions",
+                                    sortBy: option.requestValue,
+                                    searchText: searchText.isEmpty ? nil : searchText
+                                )
+                                viewModel.sortQuestions(request)
+                            }) {
+                                Text(option.rawValue)
                             }
                         }
+                    } label: {
+                        HStack {
+                            Text("Sort by: \(sortOption.rawValue)")
+                                .foregroundColor(Theme.textColor)
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(Theme.secondaryColor)
+                        }
+                        .padding(8)
+                        .background(Theme.cardBackground)
+                        .cornerRadius(8)
+                        .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2, x: 0, y: 2)
                     }
+                    .frame(width: 120) // Set a smaller width for the sorting menu
                 }
                 .padding(.horizontal)
-            }
-            .padding(.vertical, 12)
-            .background(Theme.cardBackground)
-            .shadow(color: Theme.primaryColor.opacity(0.05), radius: 2)
-            
-            // Questions list
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    if filteredQuestions.isEmpty {
-                        EmptyStateView(
-                            searchText: searchText,
-                            showNewQuestion: $showNewQuestion
-                        )
-                    } else {
-                        ForEach(filteredQuestions) { question in
-                            NavigationLink(destination: QuestionDetailView(question: question)) {
-                                QuestionRowView(question: question)
+                .padding(.vertical, 12)
+                
+                // Questions list
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        if filteredQuestions.isEmpty {
+                            EmptyStateView(
+                                searchText: searchText,
+                                showNewQuestion: $showNewQuestion
+                            )
+                        } else {
+                            ForEach(filteredQuestions) { question in
+                                NavigationLink(destination: QuestionDetailView(question: question)) {
+                                    QuestionRowView(question: question)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
+                    .padding()
                 }
-                .padding()
+                .background(Theme.backgroundColor)
+                .refreshable {
+                    viewModel.loadQuestions()
+                }
             }
-            .background(Theme.backgroundColor)
-            .refreshable {
-                viewModel.loadQuestions()
+            
+            // Ask a Question Button
+            VStack {
+                Spacer() // Push the button to the bottom
+                HStack {
+                    Spacer() // Push the button to the right
+                    Button(action: {
+                        showNewQuestion = true // Show the new question view
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("Ask a Question")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                        .padding()
+                        .buttonStyle(Theme.primaryButtonStyle())
+                    }
+                    .padding() // Add padding to position the button
+                }
             }
         }
-    }
-    
-    private func sorted(_ questions: [Question]) -> [Question] {
-        switch sortOption {
-        case .newest:
-            return questions.sorted { $0.createdDate > $1.createdDate }
-        case .active:
-            return questions.sorted { $0.answers.count > $1.answers.count }
-        case .votes:
-            return questions.sorted { $0.totalVotes > $1.totalVotes }
-        case .unanswered:
-            return questions.filter { $0.answers.isEmpty }
-        }
+        .navigationTitle("Questions")
     }
 }
 

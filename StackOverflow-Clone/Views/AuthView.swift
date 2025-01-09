@@ -33,14 +33,13 @@ struct AuthView: View {
                     .font(.caption)
             }
             
-            Button(isLogin ? "Login" : "Sign Up") {
+            LoginButtonView(title: isLogin ? "Login" : "Sign Up") {
                 if isLogin {
                     viewModel.login(email: email, password: password)
                 } else {
                     viewModel.signUp(username: username, email: email, password: password)
                 }
             }
-            .buttonStyle(Theme.primaryButtonStyle())
             
             Button(isLogin ? "Need an account? Sign Up" : "Have an account? Login") {
                 isLogin.toggle()
@@ -55,4 +54,8 @@ struct AuthView: View {
         .frame(width: 400, height: 400)
         .background(Theme.backgroundColor)
     }
+}
+
+#Preview {
+    AuthView()
 } 

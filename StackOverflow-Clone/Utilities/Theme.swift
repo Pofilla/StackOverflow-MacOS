@@ -1,52 +1,27 @@
 import SwiftUI
 
-enum Theme {
-    static let backgroundColor = Color(NSColor.windowBackgroundColor)
-    static let cardBackground = Color(NSColor.controlBackgroundColor)
-    static let primaryColor = Color(hex: "#0A95FF")  // SO's blue
-    static let secondaryColor = Color.gray
-    static let textColor = Color(NSColor.labelColor)
-    static let darkOrange = Color(hex: "#F48024")    // SO's orange
-    static let accentColor = Color(hex: "#E1ECF4")   // SO's light blue
-    static let errorColor = Color.red
-    static let cornerRadius: CGFloat = 6
-    
-    static func buttonStyle() -> CustomButtonStyle {
-        CustomButtonStyle(color: primaryColor)
-    }
-    
-    static func secondaryButtonStyle() -> CustomButtonStyle {
-        CustomButtonStyle(color: secondaryColor)
-    }
-    
-    static func primaryButtonStyle() -> CustomButtonStyle {
-        CustomButtonStyle(color: primaryColor)
-    }
-}
+struct Theme {
+    static let primaryColor = Color(red: 244/255, green: 128/255, blue: 36/255) // Orange
+    static let secondaryColor = Color(red: 255/255, green: 165/255, blue: 0/255) // Lighter Orange
+    static let darkOrange = Color(red: 255/255, green: 140/255, blue: 0/255) // Darker Orange
+    static let cardBackground = Color(NSColor.controlBackgroundColor) // Use NSColor for macOS
+    static let textColor = Color(NSColor.labelColor) // Use NSColor for macOS
+    static let accentColor = Color(red: 255/255, green: 204/255, blue: 153/255) // Light orange
+    static let errorColor = Color.red // Error color
+    static let backgroundColor = Color(NSColor.windowBackgroundColor) // Use NSColor for macOS
+    static let cornerRadius: CGFloat = 8 // Define a default corner radius
 
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
+    // Button styles
+    static func buttonStyle() -> some ButtonStyle {
+        return CustomButtonStyle(color: primaryColor)
+    }
+
+    static func primaryButtonStyle() -> some ButtonStyle {
+        return CustomButtonStyle(color: primaryColor)
+    }
+
+    static func secondaryButtonStyle() -> some ButtonStyle {
+        return CustomButtonStyle(color: secondaryColor)
     }
 }
 
@@ -56,7 +31,8 @@ struct CustomButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10) // Increased vertical padding for better hit target
+            .frame(minWidth: 100) // Ensure a minimum width for buttons
             .background(
                 RoundedRectangle(cornerRadius: Theme.cornerRadius)
                     .fill(color)
@@ -66,6 +42,10 @@ struct CustomButtonStyle: ButtonStyle {
             .shadow(color: color.opacity(0.3), radius: 3, x: 0, y: 2)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cornerRadius)
+                    .stroke(configuration.isPressed ? color.opacity(0.5) : color.opacity(0.3), lineWidth: 1)
+            )
     }
 }
 
