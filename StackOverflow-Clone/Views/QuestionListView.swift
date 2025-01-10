@@ -5,24 +5,7 @@ struct QuestionListView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Binding var showNewQuestion: Bool
     @State private var searchText = ""
-    @State private var sortOption: SortOption = .newest
     @State private var isHovered: Bool = false // State to track hover
-    
-    enum SortOption: String, CaseIterable {
-        case newest = "Newest"
-        case active = "Active"
-        case votes = "Votes"
-        case unanswered = "Unanswered"
-        
-        var requestValue: String {
-            switch self {
-            case .newest: return "date"
-            case .active: return "activity"
-            case .votes: return "votes"
-            case .unanswered: return "unanswered"
-            }
-        }
-    }
     
     var filteredQuestions: [Question] {
         let filtered = searchText.isEmpty ? viewModel.questions :
@@ -40,53 +23,29 @@ struct QuestionListView: View {
             VStack(spacing: 0) {
                 // Search and sort section
                 HStack {
-                    // Search bar
+                    // Search bar with magnifying glass icon
                     HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(Theme.secondaryColor)
-                            .padding(.leading, 8) // Padding for the icon
-                        
                         TextField("Search questions...", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(Theme.textColor)
-                            .padding(8)
-                            .padding(.leading, 0) // Remove leading padding to align with icon
+                            .padding(.leading, 30) // Add padding to make space for the icon inside the box
+                            .padding(12) // Overall padding for the field
                             .background(Theme.cardBackground)
                             .cornerRadius(8)
                             .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2, x: 0, y: 2)
+                            .overlay(
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(Theme.secondaryColor)
+                                        .padding(.leading, 8)
+                                    Spacer()
+                                }
+                            )
                     }
-                    .frame(width: 300) // Set a fixed width for the search bar
+                    .frame(maxWidth: .infinity) // Set the width to be dynamic
                     
-                    Spacer() // Push the sorting menu to the right
                     
-                    // Sort options
-                    Menu {
-                        ForEach(SortOption.allCases, id: \.self) { option in
-                            Button(action: {
-                                sortOption = option
-                                let request = SortQuestionsRequest(
-                                    action: "sort_questions",
-                                    sortBy: option.requestValue,
-                                    searchText: searchText.isEmpty ? nil : searchText
-                                )
-                                viewModel.sortQuestions(request)
-                            }) {
-                                Text(option.rawValue)
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text("Sort by: \(sortOption.rawValue)")
-                                .foregroundColor(Theme.textColor)
-                            Image(systemName: "chevron.down")
-                                .foregroundColor(Theme.secondaryColor)
-                        }
-                        .padding(8)
-                        .background(Theme.cardBackground)
-                        .cornerRadius(8)
-                        .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2, x: 0, y: 2)
-                    }
-                    .frame(width: 120) // Set a smaller width for the sorting menu
+                    
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -132,8 +91,10 @@ struct QuestionListView: View {
                                 .font(.headline)
                         }
                         .padding() // Add padding for touch target
+                        .frame(minWidth: 44, minHeight: 44) // Ensure minimum hit target size
                         .background(Color.orange) // Set button color to orange
-                        .clipShape(Capsule()) // Make the button capsule-shaped
+                        .cornerRadius(8) // Make the button rounded
+                        .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 2) // Add shadow for depth
                     }
                     .padding() // Add padding to position the button
                 }

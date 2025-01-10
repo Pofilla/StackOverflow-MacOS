@@ -5,11 +5,6 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Settings")
-                .font(.largeTitle)
-                .padding()
-                .foregroundColor(Theme.textColor)
-
             // Toggle for Dark Mode
             Toggle(isOn: $isDarkMode) {
                 Text("Dark Mode")
@@ -22,9 +17,9 @@ struct SettingsView: View {
             Spacer()
         }
         .padding()
-        .background(Theme.backgroundColor)
-        .cornerRadius(Theme.cornerRadius)
+        .navigationTitle("Settings")
     }
+        
 }
 
 #Preview {

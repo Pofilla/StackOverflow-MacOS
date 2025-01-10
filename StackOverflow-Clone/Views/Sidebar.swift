@@ -21,12 +21,6 @@ struct Sidebar: View {
                 }
             }
             
-            Section("PROFILE") {
-                NavigationLink(value: "profile") {
-                    Label("Profile", systemImage: "person.fill")
-                }
-            }
-            
             Section("SETTINGS") {
                 NavigationLink(value: "settings") {
                     Label("Settings", systemImage: "gear")
@@ -45,8 +39,6 @@ struct Sidebar: View {
                     QuestionListView(showNewQuestion: $showNewQuestion)
                 case "tags":
                     TagsView()
-                case "profile":
-                    Text("Profile View")
                 case "settings":
                     SettingsView()
                 default:

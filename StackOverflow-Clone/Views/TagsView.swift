@@ -2,8 +2,7 @@ import SwiftUI
 
 struct TagsView: View {
     @EnvironmentObject private var viewModel: QuestionListViewModel
-    @State private var searchText = ""
-    
+
     var allTags: [String: Int] {
         var tagCounts: [String: Int] = [:]
         for question in viewModel.questions {
@@ -13,44 +12,40 @@ struct TagsView: View {
         }
         return tagCounts
     }
-    
+
     var filteredTags: [(String, Int)] {
         let tags = allTags.map { ($0.key, $0.value) }
             .sorted { $0.1 > $1.1 }
         
-        if searchText.isEmpty {
-            return tags
-        }
-        return tags.filter { $0.0.localizedCaseInsensitiveContains(searchText) }
+        return tags // Return all tags without filtering
     }
-    
+
     var body: some View {
-        VStack(spacing: 12) {
-            SearchBar(text: $searchText) {
-                // Handle search submit if needed
-            }
-            .padding(.horizontal)
-            
-            ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.adaptive(minimum: 300, maximum: 400), spacing: 16)
-                    ],
-                    spacing: 16
-                ) {
-                    if filteredTags.isEmpty {
+        ScrollView {
+            LazyVGrid(
+                columns: [
+                    GridItem(.adaptive(minimum: 300, maximum: 400), spacing: 16)
+                ],
+                spacing: 16
+            ) {
+                if filteredTags.isEmpty {
+                    VStack {
+                        Spacer() // Push content to the vertical center
                         Text("No tags found")
                             .foregroundColor(Theme.secondaryColor)
                             .padding()
-                    } else {
-                        ForEach(filteredTags, id: \.0) { tag, count in
-                            TagCard(name: tag, count: count)
-                        }
+                        Spacer() // Push content to the vertical center
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity) // Occupy the entire screen space
+                } else {
+                    ForEach(filteredTags, id: \.0) { tag, count in
+                        TagCard(name: tag, count: count)
                     }
                 }
-                .padding()
             }
+            .padding()
         }
+        .navigationTitle("Tags") // Set the navigation title for TagsView
         .cornerRadius(Theme.cornerRadius)
     }
 }
@@ -58,7 +53,8 @@ struct TagsView: View {
 struct TagCard: View {
     let name: String
     let count: Int
-    
+    @State private var isPressed: Bool = false // State to track button press
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(name)
@@ -79,8 +75,24 @@ struct TagCard: View {
                 NavigationLink(destination: FilteredQuestionsView(tag: name)) {
                     Text("View questions")
                         .font(.caption)
-                        .foregroundColor(Theme.primaryColor)
+                        .foregroundColor(.white) // Ensure good contrast
+                        .padding(8) // Add padding for touch target
+                        .background(isPressed ? Color.blue : Theme.primaryColor) // Change background color on press
+                        .cornerRadius(8) // Rounded corners
+                        .scaleEffect(isPressed ? 0.95 : 1.0) // Scale effect for animation
+                        .animation(.easeInOut(duration: 0.2), value: isPressed) // Animation for press effect
                 }
+                .buttonStyle(PlainButtonStyle()) // Ensure button style is consistent
+                .onHover { isHovered in
+                    isPressed = isHovered // Handle hover state changes
+                }
+                .onTapGesture {
+                    isPressed = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isPressed = false // Reset pressed state after a short delay
+                    }
+                }
+
             }
         }
         .padding()
