@@ -6,6 +6,7 @@ struct QuestionListView: View {
     @Binding var showNewQuestion: Bool
     @State private var searchText = ""
     @State private var sortOption: SortOption = .newest
+    @State private var isHovered: Bool = false // State to track hover
     
     enum SortOption: String, CaseIterable {
         case newest = "Newest"
@@ -109,13 +110,12 @@ struct QuestionListView: View {
                     }
                     .padding()
                 }
-                .background(Theme.backgroundColor)
                 .refreshable {
                     viewModel.loadQuestions()
                 }
             }
             
-            // Ask a Question Button
+            // Ask a Question Button (always visible)
             VStack {
                 Spacer() // Push the button to the bottom
                 HStack {
@@ -131,8 +131,9 @@ struct QuestionListView: View {
                                 .foregroundColor(.white)
                                 .font(.headline)
                         }
-                        .padding()
-                        .buttonStyle(Theme.primaryButtonStyle())
+                        .padding() // Add padding for touch target
+                        .background(Color.orange) // Set button color to orange
+                        .clipShape(Capsule()) // Make the button capsule-shaped
                     }
                     .padding() // Add padding to position the button
                 }
@@ -161,11 +162,20 @@ struct EmptyStateView: View {
                 .foregroundColor(Theme.secondaryColor)
                 .multilineTextAlignment(.center)
             
+            // Ask Question Button in Empty State
             Button(action: { showNewQuestion = true }) {
-                Label("Ask Question", systemImage: "plus.circle.fill")
-                    .symbolRenderingMode(.hierarchical)
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white)
+                    Text("Ask a Question")
+                        .foregroundColor(.white)
+                        .font(.headline)
+                }
+                .padding() // Add padding for touch target
+                .background(Color.orange) // Set button color to orange
+                .clipShape(Capsule()) // Make the button capsule-shaped
             }
-            .buttonStyle(Theme.primaryButtonStyle())
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)

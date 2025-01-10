@@ -49,10 +49,8 @@ struct TagsView: View {
                     }
                 }
                 .padding()
-                .background(Theme.backgroundColor)
             }
         }
-        .background(Theme.backgroundColor)
         .cornerRadius(Theme.cornerRadius)
     }
 }
