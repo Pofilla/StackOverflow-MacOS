@@ -31,6 +31,9 @@ struct TagsView: View {
                 if filteredTags.isEmpty {
                     VStack {
                         Spacer() // Push content to the vertical center
+                        Image(systemName: "exclamationmark.triangle") // Icon for no tags
+                            .font(.largeTitle)
+                            .foregroundColor(.gray) // Change color for better visibility
                         Text("No tags found")
                             .font(.largeTitle) // Increase font size
                             .foregroundColor(.gray) // Change color for better visibility

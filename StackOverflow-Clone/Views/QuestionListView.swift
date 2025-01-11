@@ -5,7 +5,7 @@ struct QuestionListView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Binding var showNewQuestion: Bool
     @State private var searchText = ""
-    @State private var isPressed: Bool = false // Change to @State
+    @State private var isPressed: Bool = false // State to track button press
 
     var filteredQuestions: [Question] {
         let filtered = searchText.isEmpty ? viewModel.questions :
@@ -50,21 +50,25 @@ struct QuestionListView: View {
                 .padding(.vertical, 12)
                 
                 // Questions list
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        if filteredQuestions.isEmpty {
-                            EmptyStateView()
-                        } else {
-                            ForEach(filteredQuestions) { question in
-                                NavigationLink(destination: QuestionDetailView(question: question)) {
-                                    QuestionRowView(question: question)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                    .padding()
-                }
+                               ScrollView {
+                                   LazyVStack(spacing: 12) {
+                                       if filteredQuestions.isEmpty {
+                                           EmptyStateView()
+                                       } else {
+                                           ForEach(filteredQuestions) { question in
+                                               NavigationLink(destination: QuestionDetailView(question: question)) {
+                                                   QuestionRowView(question: question)
+                                               }
+                                               .buttonStyle(.plain)
+                                           }
+                                       }
+                                   }
+                                   .padding()
+                               }
+                               .refreshable {
+                                   viewModel.loadQuestions()
+                               }
+                           }
                 .refreshable {
                     viewModel.loadQuestions()
                 }
@@ -78,14 +82,19 @@ struct QuestionListView: View {
                     Button(action: {
                         showNewQuestion = true // Show the new question view
                     }) {
-                        Text("Ask a Question")
-                            .font(.caption)
-                            .foregroundColor(.white) // Ensure good contrast
-                            .padding(8) // Add padding for touch target
-                            .background(isPressed ? Color.blue : Theme.primaryColor) // Change background color on press
-                            .cornerRadius(8) // Rounded corners
-                            .scaleEffect(isPressed ? 0.95 : 1.0) // Scale effect for animation
-                            .animation(.easeInOut(duration: 0.2), value: isPressed) // Animation for press effect
+                        HStack {
+                            Image(systemName: "plus") // Add the plus icon
+                                .font(.title) // Increase icon size
+                                .foregroundColor(.white) // Ensure good contrast
+                            Text("Ask a Question")
+                                .font(.title) // Increase font size for the button
+                                .foregroundColor(.white) // Ensure good contrast
+                        }
+                        .padding(16) // Increase padding for a larger button
+                        .background(isPressed ? Color.blue : Theme.primaryColor) // Change background color on press
+                        .clipShape(Capsule()) // Make the button capsule-shaped
+                        .scaleEffect(isPressed ? 0.95 : 1.0) // Scale effect for animation
+                        .animation(.easeInOut(duration: 0.2), value: isPressed) // Animation for press effect
                     }
                     .buttonStyle(PlainButtonStyle()) // Ensure button style is consistent
                     .onHover { isHovered in
@@ -101,9 +110,8 @@ struct QuestionListView: View {
                 .padding() // Add padding to position the button
             }
         }
-        .navigationTitle("Questions") // Set the navigation title for Questions
     }
-}
+
 
 // Helper Views
 struct EmptyStateView: View {
@@ -135,20 +143,96 @@ struct QuestionRowView: View {
         HStack(alignment: .top, spacing: 16) {
             // Voting controls
             VStack(spacing: 8) {
-                // Add your voting controls here
-            }
-            VStack(alignment: .leading) {
-                Text(question.title) // Display the question title
+                Button(action: { vote(.upvote) }) {
+                    Image(systemName: "arrow.up")
+                        .foregroundColor(userVoteType == .upvote ? Theme.primaryColor : Theme.secondaryColor)
+                }
+                
+                Text("\(question.totalVotes)")
                     .font(.headline)
-                Text(question.body) // Display the question body instead
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(Theme.textColor)
+                
+                Button(action: { vote(.downvote) }) {
+                    Image(systemName: "arrow.down")
+                        .foregroundColor(userVoteType == .downvote ? Theme.primaryColor : Theme.secondaryColor)
+                }
             }
-            .padding()
+            .disabled(authViewModel.currentUser == nil)
+            
+            // Question content
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(question.title)
+                        .font(.title2.bold())
+                        .foregroundColor(Theme.textColor)
+                    
+                    Spacer()
+                    
+                    // Add delete menu for question author
+                    if authViewModel.currentUser?.id == question.authorId {
+                        Menu {
+                            Button(role: .destructive, action: deleteQuestion) {
+                                Label("Delete Question", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .foregroundColor(Theme.secondaryColor)
+                        }
+                    }
+                }
+                
+                Text(question.body)
+                    .foregroundColor(Theme.textColor)
+                
+                // Tags
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(question.tags, id: \.self) { tag in
+                            Text(tag)
+                                .tagStyle()
+                        }
+                    }
+                }
+                
+                HStack {
+                    // Answer count badge
+                    BadgeView(
+                        count: question.answers.count,
+                        color: Theme.darkOrange,
+                        icon: "text.bubble"
+                    )
+                    
+                    Spacer()
+                    
+                    Text("asked \(timeAgo(question.createdDate))")
+                        .font(.caption)
+                        .foregroundColor(Theme.secondaryColor)
+                }
+            }
         }
+        .padding()
         .background(Theme.cardBackground)
-        .cornerRadius(8)
-        .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2) // Add shadow for depth
+        .cornerRadius(Theme.cornerRadius)
+        .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2)
+    }
+    
+    private var userVoteType: VoteType {
+        guard let userId = authViewModel.currentUser?.id else { return .none }
+        return question.userVotes[userId] ?? .none
+    }
+    
+    private func vote(_ type: VoteType) {
+        viewModel.vote(on: question.id, voteType: type)
+    }
+    
+    private func deleteQuestion() {
+        viewModel.deleteQuestion(question.id, authorId: question.authorId)
+    }
+    
+    private func timeAgo(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 
