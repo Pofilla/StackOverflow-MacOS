@@ -32,11 +32,13 @@ struct TagsView: View {
                     VStack {
                         Spacer() // Push content to the vertical center
                         Text("No tags found")
-                            .foregroundColor(Theme.secondaryColor)
-                            .padding()
+                            .font(.largeTitle) // Increase font size
+                            .foregroundColor(.gray) // Change color for better visibility
+                            .multilineTextAlignment(.center) // Center the text
                         Spacer() // Push content to the vertical center
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity) // Occupy the entire screen space
+                    .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure it takes full space
+                    .background(Color.clear) // Optional: To ensure no background color interference
                 } else {
                     ForEach(filteredTags, id: \.0) { tag, count in
                         TagCard(name: tag, count: count)
@@ -92,7 +94,6 @@ struct TagCard: View {
                         isPressed = false // Reset pressed state after a short delay
                     }
                 }
-
             }
         }
         .padding()

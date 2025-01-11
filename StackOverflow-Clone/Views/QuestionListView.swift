@@ -5,8 +5,8 @@ struct QuestionListView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Binding var showNewQuestion: Bool
     @State private var searchText = ""
-    @State private var isHovered: Bool = false // State to track hover
-    
+    @State private var isPressed: Bool = false // Change to @State
+
     var filteredQuestions: [Question] {
         let filtered = searchText.isEmpty ? viewModel.questions :
             viewModel.questions.filter { question in
@@ -17,11 +17,11 @@ struct QuestionListView: View {
         
         return filtered
     }
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Search and sort section
+                // Search section
                 HStack {
                     // Search bar with magnifying glass icon
                     HStack {
@@ -44,8 +44,7 @@ struct QuestionListView: View {
                     }
                     .frame(maxWidth: .infinity) // Set the width to be dynamic
                     
-                    
-                    
+                    Spacer() // Push the sorting menu to the right
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -54,10 +53,7 @@ struct QuestionListView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         if filteredQuestions.isEmpty {
-                            EmptyStateView(
-                                searchText: searchText,
-                                showNewQuestion: $showNewQuestion
-                            )
+                            EmptyStateView()
                         } else {
                             ForEach(filteredQuestions) { question in
                                 NavigationLink(destination: QuestionDetailView(question: question)) {
@@ -74,7 +70,7 @@ struct QuestionListView: View {
                 }
             }
             
-            // Ask a Question Button (always visible)
+            // Floating Ask a Question Button
             VStack {
                 Spacer() // Push the button to the bottom
                 HStack {
@@ -82,85 +78,51 @@ struct QuestionListView: View {
                     Button(action: {
                         showNewQuestion = true // Show the new question view
                     }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            Text("Ask a Question")
-                                .foregroundColor(.white)
-                                .font(.headline)
-                        }
-                        .padding() // Add padding for touch target
-                        .frame(minWidth: 44, minHeight: 44) // Ensure minimum hit target size
-                        .background(Color.orange) // Set button color to orange
-                        .cornerRadius(8) // Make the button rounded
-                        .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 2) // Add shadow for depth
+                        Text("Ask a Question")
+                            .font(.caption)
+                            .foregroundColor(.white) // Ensure good contrast
+                            .padding(8) // Add padding for touch target
+                            .background(isPressed ? Color.blue : Theme.primaryColor) // Change background color on press
+                            .cornerRadius(8) // Rounded corners
+                            .scaleEffect(isPressed ? 0.95 : 1.0) // Scale effect for animation
+                            .animation(.easeInOut(duration: 0.2), value: isPressed) // Animation for press effect
                     }
-                    .padding() // Add padding to position the button
+                    .buttonStyle(PlainButtonStyle()) // Ensure button style is consistent
+                    .onHover { isHovered in
+                        isPressed = isHovered // Handle hover state changes
+                    }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        isPressed = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isPressed = false // Reset pressed state after a short delay
+                        }
+                    })
                 }
+                .padding() // Add padding to position the button
             }
         }
-        .navigationTitle("Questions")
+        .navigationTitle("Questions") // Set the navigation title for Questions
     }
 }
 
 // Helper Views
 struct EmptyStateView: View {
-    let searchText: String
-    @Binding var showNewQuestion: Bool
-    
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: searchText.isEmpty ? "text.bubble" : "magnifyingglass")
+            Image(systemName: "text.bubble")
                 .font(.system(size: 48))
                 .foregroundColor(Theme.secondaryColor)
             
-            Text(searchText.isEmpty ? "No questions yet" : "No matching questions found")
+            Text("No questions yet")
                 .font(.headline)
             
-            Text(searchText.isEmpty ? "Be the first to ask a question!" : "Try a different search term or ask a new question")
+            Text("Be the first to ask a question!")
                 .font(.subheadline)
                 .foregroundColor(Theme.secondaryColor)
                 .multilineTextAlignment(.center)
-            
-            // Ask Question Button in Empty State
-            Button(action: { showNewQuestion = true }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
-                    Text("Ask a Question")
-                        .foregroundColor(.white)
-                        .font(.headline)
-                }
-                .padding() // Add padding for touch target
-                .background(Color.orange) // Set button color to orange
-                .clipShape(Capsule()) // Make the button capsule-shaped
-            }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct PillButtonStyle: ButtonStyle {
-    let isSelected: Bool
-    
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                isSelected ? Theme.primaryColor : Theme.cardBackground
-            )
-            .foregroundColor(isSelected ? .white : Theme.secondaryColor)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.primaryColor.opacity(0.2), lineWidth: isSelected ? 0 : 1)
-            )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
-            .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
     }
 }
 
@@ -173,115 +135,24 @@ struct QuestionRowView: View {
         HStack(alignment: .top, spacing: 16) {
             // Voting controls
             VStack(spacing: 8) {
-                Button(action: { vote(.upvote) }) {
-                    Image(systemName: "arrow.up")
-                        .foregroundColor(userVoteType == .upvote ? Theme.primaryColor : Theme.secondaryColor)
-                }
-                
-                Text("\(question.totalVotes)")
+                // Add your voting controls here
+            }
+            VStack(alignment: .leading) {
+                Text(question.title) // Display the question title
                     .font(.headline)
-                    .foregroundColor(Theme.textColor)
-                
-                Button(action: { vote(.downvote) }) {
-                    Image(systemName: "arrow.down")
-                        .foregroundColor(userVoteType == .downvote ? Theme.primaryColor : Theme.secondaryColor)
-                }
+                Text(question.body) // Display the question body instead
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
             }
-            .disabled(authViewModel.currentUser == nil)
-            
-            // Question content
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text(question.title)
-                        .font(.title2.bold())
-                        .foregroundColor(Theme.textColor)
-                    
-                    Spacer()
-                    
-                    // Add delete menu for question author
-                    if authViewModel.currentUser?.id == question.authorId {
-                        Menu {
-                            Button(role: .destructive, action: deleteQuestion) {
-                                Label("Delete Question", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .foregroundColor(Theme.secondaryColor)
-                        }
-                    }
-                }
-                
-                Text(question.body)
-                    .foregroundColor(Theme.textColor)
-                
-                // Tags
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(question.tags, id: \.self) { tag in
-                            Text(tag)
-                                .tagStyle()
-                        }
-                    }
-                }
-                
-                HStack {
-                    // Answer count badge
-                    BadgeView(
-                        count: question.answers.count,
-                        color: Theme.darkOrange,
-                        icon: "text.bubble"
-                    )
-                    
-                    Spacer()
-                    
-                    Text("asked \(timeAgo(question.createdDate))")
-                        .font(.caption)
-                        .foregroundColor(Theme.secondaryColor)
-                }
-            }
+            .padding()
         }
-        .padding()
         .background(Theme.cardBackground)
-        .cornerRadius(Theme.cornerRadius)
-        .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2)
-    }
-    
-    private var userVoteType: VoteType {
-        guard let userId = authViewModel.currentUser?.id else { return .none }
-        return question.userVotes[userId] ?? .none
-    }
-    
-    private func vote(_ type: VoteType) {
-        viewModel.vote(on: question.id, voteType: type)
-    }
-    
-    private func deleteQuestion() {
-        viewModel.deleteQuestion(question.id, authorId: question.authorId)
-    }
-    
-    private func timeAgo(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+        .cornerRadius(8)
+        .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2) // Add shadow for depth
     }
 }
 
-struct StatView: View {
-    let value: Int
-    let label: String
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Text("\(value)")
-                .font(.headline)
-            Text(label)
-                .font(.caption2)
-                .foregroundColor(Theme.secondaryColor)
-        }
-        .frame(width: 60)
-    }
-}
-
+// Preview
 #Preview {
     QuestionListView(showNewQuestion: .constant(false))
         .environmentObject(QuestionListViewModel())
