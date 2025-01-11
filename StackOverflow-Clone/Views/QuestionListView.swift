@@ -50,25 +50,21 @@ struct QuestionListView: View {
                 .padding(.vertical, 12)
                 
                 // Questions list
-                               ScrollView {
-                                   LazyVStack(spacing: 12) {
-                                       if filteredQuestions.isEmpty {
-                                           EmptyStateView()
-                                       } else {
-                                           ForEach(filteredQuestions) { question in
-                                               NavigationLink(destination: QuestionDetailView(question: question)) {
-                                                   QuestionRowView(question: question)
-                                               }
-                                               .buttonStyle(.plain)
-                                           }
-                                       }
-                                   }
-                                   .padding()
-                               }
-                               .refreshable {
-                                   viewModel.loadQuestions()
-                               }
-                           }
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        if filteredQuestions.isEmpty {
+                            EmptyStateView() // Call without parameters
+                        } else {
+                            ForEach(filteredQuestions) { question in
+                                NavigationLink(destination: QuestionDetailView(question: question)) {
+                                    QuestionRowView(question: question)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .padding()
+                }
                 .refreshable {
                     viewModel.loadQuestions()
                 }
@@ -110,8 +106,9 @@ struct QuestionListView: View {
                 .padding() // Add padding to position the button
             }
         }
+        .navigationTitle("Questions") // Set the navigation title to "Questions"
     }
-
+}
 
 // Helper Views
 struct EmptyStateView: View {
