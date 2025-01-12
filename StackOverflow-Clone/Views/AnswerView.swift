@@ -78,7 +78,6 @@ struct AnswerView: View {
     
     AnswerView(answer: sampleAnswer, questionId: "1")
         .environmentObject(QuestionListViewModel())
-        .environmentObject(AuthViewModel())
         .padding()
         .background(Theme.backgroundColor)
 } 

@@ -3,7 +3,6 @@ import Foundation
 
 struct AddAnswerView: View {
     @EnvironmentObject var viewModel: QuestionListViewModel
-    @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     let questionId: String
     
@@ -83,5 +82,4 @@ struct AddAnswerView: View {
 #Preview {
     AddAnswerView(questionId: "1")
         .environmentObject(QuestionListViewModel())
-        .environmentObject(AuthViewModel())
 } 

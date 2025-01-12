@@ -6,7 +6,9 @@ import pickle
 
 class StackOverflowServer:
     def __init__(self):
-        self.questions = self.load_questions()  # Load saved questions
+        self.data = self.load_data()  # Load saved data (questions and users)
+        self.questions = self.data.get('questions', [])
+        self.users = self.data.get('users', {})  # Assuming users are stored in a dictionary
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.host = '127.0.0.1'
@@ -14,14 +16,31 @@ class StackOverflowServer:
 
     def load_questions(self):
         try:
-            with open('questions.pkl', 'rb') as f:
+            with open('server/database.pkl', 'rb') as f:
                 return pickle.load(f)
         except:
             return []
 
     def save_questions(self):
-        with open('questions.pkl', 'wb') as f:
+        with open('server/database.pkl', 'wb') as f:
             pickle.dump(self.questions, f)
+
+    def load_data(self):
+        try:
+            with open('server/database.pkl', 'rb') as f:
+                data = pickle.load(f)
+                # Ensure the data is a dictionary with the expected keys
+                if isinstance(data, dict) and 'questions' in data and 'users' in data:
+                    return data
+                else:
+                    print("Warning: Data structure is not as expected. Initializing empty data.")
+                    return {'questions': [], 'users': {}}
+        except FileNotFoundError:
+            print("Warning: Database file not found. Initializing empty data.")
+            return {'questions': [], 'users': {}}
+        except Exception as e:
+            print(f"Error loading data: {e}")
+            return {'questions': [], 'users': {}}
 
     def start(self):
         try:
@@ -143,6 +162,61 @@ class StackOverflowServer:
                 
                 return {'status': 'success'}
             
+            elif action == 'login':
+                email = request.get('email')
+                password = request.get('password')
+                
+                print(f"Attempting to log in with email: {email} and password: {password}")
+                
+                user = self.find_user_by_email(email)  # Check if user exists
+                if user:
+                    print(f"User found: {user}")
+                    if user['password'] == password:  # Check password
+                        return {
+                            'status': 'success',
+                            'message': 'Login successful',
+                            'username': user['username']
+                        }
+                    else:
+                        print("Password does not match.")
+                        return {
+                            'status': 'error',
+                            'message': 'Invalid email or password'
+                        }
+                else:
+                    print("No user found with that email.")
+                    return {
+                        'status': 'error',
+                        'message': 'Invalid email or password'
+                    }
+            
+            elif action == 'sign_up':
+                username = request.get('username')
+                email = request.get('email')
+                password = request.get('password')
+
+                # Check if the user already exists
+                if self.find_user_by_email(email):
+                    return {
+                        'status': 'error',
+                        'message': 'Account already exists'
+                    }
+
+                # Create a new user account
+                new_user = {
+                    'username': username,
+                    'email': email,
+                    'password': password,  # In a real application, hash the password
+                    'created_date': datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                }
+                self.data['users'][email] = new_user  # Store user in the database
+                self.save_data()  # Save the updated user data
+
+                return {
+                    'status': 'success',
+                    'message': 'Account created successfully'
+                }
+            
             else:
                 return {
                     'status': 'error',
@@ -157,6 +231,16 @@ class StackOverflowServer:
                 'status': 'error',
                 'message': str(e)
             }
+
+    def find_user_by_email(self, email):
+        return self.users.get(email)  # Return user data if email exists, otherwise None
+
+    def save_data(self):
+        with open('server/database.pkl', 'wb') as f:
+            pickle.dump({
+                'questions': self.questions,
+                'users': self.users  # Ensure users are saved as a dictionary
+            }, f)
 
 if __name__ == '__main__':
     try:

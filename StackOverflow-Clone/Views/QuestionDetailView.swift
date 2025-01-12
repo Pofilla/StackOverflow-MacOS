@@ -2,7 +2,6 @@ import SwiftUI
 
 struct QuestionDetailView: View {
     @EnvironmentObject var viewModel: QuestionListViewModel
-    @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showAddAnswer = false
     @State private var answerBody = ""
@@ -198,6 +197,5 @@ struct AddAnswerSheet: View {
             userVotes: [:]
         ))
         .environmentObject(QuestionListViewModel())
-        .environmentObject(AuthViewModel())
     }
 } 

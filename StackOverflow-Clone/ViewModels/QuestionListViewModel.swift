@@ -11,11 +11,11 @@ struct QuestionRequest: Codable {
     }
 }
 
-struct ServerResponse: Codable {
-    let status: String
-    let data: [Question]?
-    let message: String?
-}
+//struct ServerResponse: Codable {
+//    let status: String
+//    let data: [Question]?
+//    let message: String?
+//}
 
 struct AnswerRequest: Codable {
     let action: String

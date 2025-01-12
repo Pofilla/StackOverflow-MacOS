@@ -18,6 +18,5 @@ struct MainView: View {
 
 #Preview {
     MainView()
-        .environmentObject(AuthViewModel())
         .environmentObject(QuestionListViewModel())
 } 

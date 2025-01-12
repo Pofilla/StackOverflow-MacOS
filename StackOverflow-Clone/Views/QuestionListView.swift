@@ -2,7 +2,6 @@ import SwiftUI
 
 struct QuestionListView: View {
     @EnvironmentObject private var viewModel: QuestionListViewModel
-    @EnvironmentObject private var authViewModel: AuthViewModel
     @Binding var showNewQuestion: Bool
     @State private var searchText = ""
     @State private var isPressed: Bool = false // State to track button press
@@ -133,7 +132,6 @@ struct EmptyStateView: View {
 
 struct QuestionRowView: View {
     @EnvironmentObject var viewModel: QuestionListViewModel
-    @EnvironmentObject var authViewModel: AuthViewModel
     let question: Question
     
     var body: some View {
@@ -142,7 +140,7 @@ struct QuestionRowView: View {
             VStack(spacing: 8) {
                 Button(action: { vote(.upvote) }) {
                     Image(systemName: "arrow.up")
-                        .foregroundColor(userVoteType == .upvote ? Theme.primaryColor : Theme.secondaryColor)
+  
                 }
                 
                 Text("\(question.totalVotes)")
@@ -151,10 +149,10 @@ struct QuestionRowView: View {
                 
                 Button(action: { vote(.downvote) }) {
                     Image(systemName: "arrow.down")
-                        .foregroundColor(userVoteType == .downvote ? Theme.primaryColor : Theme.secondaryColor)
+
                 }
             }
-            .disabled(authViewModel.currentUser == nil)
+
             
             // Question content
             VStack(alignment: .leading, spacing: 12) {
@@ -166,7 +164,7 @@ struct QuestionRowView: View {
                     Spacer()
                     
                     // Add delete menu for question author
-                    if authViewModel.currentUser?.id == question.authorId {
+                    if true {
                         Menu {
                             Button(role: .destructive, action: deleteQuestion) {
                                 Label("Delete Question", systemImage: "trash")
@@ -213,10 +211,6 @@ struct QuestionRowView: View {
         .shadow(color: Theme.primaryColor.opacity(0.1), radius: 2)
     }
     
-    private var userVoteType: VoteType {
-        guard let userId = authViewModel.currentUser?.id else { return .none }
-        return question.userVotes[userId] ?? .none
-    }
     
     private func vote(_ type: VoteType) {
         viewModel.vote(on: question.id, voteType: type)
@@ -237,5 +231,4 @@ struct QuestionRowView: View {
 #Preview {
     QuestionListView(showNewQuestion: .constant(false))
         .environmentObject(QuestionListViewModel())
-        .environmentObject(AuthViewModel())
 }

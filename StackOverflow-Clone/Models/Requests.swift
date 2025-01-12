@@ -45,4 +45,30 @@ struct DeleteQuestionRequest: Codable {
         case questionId = "question_id"
         case authorId = "author_id"
     }
+}
+
+struct LoginRequest: Codable {
+    let action: String
+    let email: String
+    let password: String
+    
+    enum CodingKeys: String, CodingKey {
+        case action
+        case email
+        case password
+    }
+}
+
+struct SignUpRequest: Codable {
+    let action: String
+    let username: String
+    let email: String
+    let password: String
+    
+    enum CodingKeys: String, CodingKey {
+        case action
+        case username
+        case email
+        case password
+    }
 } 

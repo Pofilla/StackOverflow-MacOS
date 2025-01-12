@@ -1,16 +1,25 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject var userSession: UserSession
+
     var body: some View {
         VStack {
-            Text("Profile View is currently empty.") // Placeholder content
-                .font(.largeTitle)
-                .padding()
+            if let username = userSession.username {
+                Text("Welcome, \(username)!")
+                    .font(.largeTitle)
+                    .padding()
+            } else {
+                Text("No user logged in.")
+                    .font(.headline)
+                    .padding()
+            }
         }
-        .navigationTitle("Profile") // Ensure the title is set to "Profile"
+        .navigationTitle("Profile")
     }
 }
 
 #Preview {
     ProfileView()
+        .environmentObject(UserSession())
 } 

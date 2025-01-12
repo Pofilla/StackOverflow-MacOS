@@ -10,14 +10,14 @@ import SwiftUI
 @main
 struct StackOverflow_CloneApp: App {
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false // Store the user's preference
-    @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var questionListViewModel = QuestionListViewModel()
+    @StateObject private var userSession = UserSession() // Initialize UserSession
     
     var body: some Scene {
         WindowGroup {
             MainView()
-                .environmentObject(authViewModel)
                 .environmentObject(questionListViewModel)
+                .environmentObject(userSession) // Provide UserSession to the environment
                 .preferredColorScheme(isDarkMode ? .dark : .light) // Apply the selected color scheme
         }
     }
