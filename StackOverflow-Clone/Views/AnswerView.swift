@@ -11,39 +11,48 @@ struct AnswerView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // Author name header
+            HStack {
+                Text("Answer by \(answer.authorId)")
+                    .font(.headline)
+                    .foregroundColor(Theme.primaryColor)
+                
+                Spacer()
+                
+                // Delete button
+                Button(action: {
+                    showDeleteConfirmation = true
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .onHover { hovering in
+                    isHovering = hovering
+                }
+                .alert(isPresented: $showDeleteConfirmation) {
+                    Alert(
+                        title: Text("Confirm Deletion"),
+                        message: Text("Are you sure you want to delete this answer?"),
+                        primaryButton: .destructive(Text("Delete")) {
+                            deleteAnswer()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
+            }
+            
+            // Answer content
             Text(answer.body)
                 .font(.body)
                 .foregroundColor(Theme.textColor)
             
+            // Timestamp
             HStack {
                 Spacer()
-                
                 Text("answered \(timeAgo(answer.createdDate))")
                     .font(.caption)
                     .foregroundColor(Theme.secondaryColor)
-                
-                if answer.authorId == "anonymous" {
-                    Button(action: {
-                        showDeleteConfirmation = true
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .onHover { hovering in
-                        isHovering = hovering
-                    }
-                    .alert(isPresented: $showDeleteConfirmation) {
-                        Alert(
-                            title: Text("Confirm Deletion"),
-                            message: Text("Are you sure you want to delete this answer?"),
-                            primaryButton: .destructive(Text("Delete")) {
-                                deleteAnswer()
-                            },
-                            secondaryButton: .cancel()
-                        )
-                    }
-                }
             }
         }
         .padding()
@@ -64,12 +73,12 @@ struct AnswerView: View {
     }
 }
 
-// Preview provider
+// Preview
 #Preview {
     let sampleAnswer = Answer(
         id: "1",
         questionId: "1",
-        authorId: "anonymous",
+        authorId: "Reza",  // Use a real name for testing
         body: "This is a sample answer",
         createdDate: Date(),
         votes: 0,
@@ -80,4 +89,4 @@ struct AnswerView: View {
         .environmentObject(QuestionListViewModel())
         .padding()
         .background(Theme.backgroundColor)
-} 
+}

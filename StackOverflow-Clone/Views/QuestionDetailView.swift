@@ -100,6 +100,7 @@ struct QuestionDetailView: View {
 struct AddAnswerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var viewModel: QuestionListViewModel
+    @EnvironmentObject var userSession: UserSession  // Add this line
     let questionId: String
     
     @State private var answerBody = ""
@@ -169,7 +170,7 @@ struct AddAnswerSheet: View {
         let answer = Answer(
             id: UUID().uuidString,
             questionId: questionId,
-            authorId: "anonymous",
+            authorId: userSession.username ?? "anonymous",  // Use username if available
             body: answerBody.trimmingCharacters(in: .whitespacesAndNewlines),
             createdDate: Date(),
             votes: 0,
@@ -197,5 +198,6 @@ struct AddAnswerSheet: View {
             userVotes: [:]
         ))
         .environmentObject(QuestionListViewModel())
+        .environmentObject(UserSession())  // Ensure UserSession is available in preview
     }
-} 
+}

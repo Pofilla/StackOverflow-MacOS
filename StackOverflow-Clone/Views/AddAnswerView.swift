@@ -3,6 +3,7 @@ import Foundation
 
 struct AddAnswerView: View {
     @EnvironmentObject var viewModel: QuestionListViewModel
+    @EnvironmentObject var userSession: UserSession
     @Environment(\.dismiss) private var dismiss
     let questionId: String
     
@@ -67,7 +68,7 @@ struct AddAnswerView: View {
         let answer = Answer(
             id: UUID().uuidString,
             questionId: questionId,
-            authorId: "anonymous",
+            authorId: userSession.username ?? "anonymous",
             body: answerBody.trimmingCharacters(in: .whitespacesAndNewlines),
             createdDate: Date(),
             votes: 0,
@@ -79,7 +80,9 @@ struct AddAnswerView: View {
     }
 }
 
+// Preview
 #Preview {
     AddAnswerView(questionId: "1")
         .environmentObject(QuestionListViewModel())
-} 
+        .environmentObject(UserSession())
+}

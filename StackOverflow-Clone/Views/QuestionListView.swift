@@ -176,28 +176,26 @@ struct QuestionRowView: View {
                     
                     Spacer()
                     
-                    // Add delete menu for question author
-                    if question.authorId == "anonymous" {
-                        Button(action: {
-                            showDeleteConfirmation = true
-                        }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .onHover { hovering in
-                            isHovering = hovering
-                        }
-                        .alert(isPresented: $showDeleteConfirmation) {
-                            Alert(
-                                title: Text("Confirm Deletion"),
-                                message: Text("Are you sure you want to delete this question?"),
-                                primaryButton: .destructive(Text("Delete")) {
-                                    deleteQuestion()
-                                },
-                                secondaryButton: .cancel()
-                            )
-                        }
+                    // Always show delete button without condition
+                    Button(action: {
+                        showDeleteConfirmation = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .onHover { hovering in
+                        isHovering = hovering
+                    }
+                    .alert(isPresented: $showDeleteConfirmation) {
+                        Alert(
+                            title: Text("Confirm Deletion"),
+                            message: Text("Are you sure you want to delete this question?"),
+                            primaryButton: .destructive(Text("Delete")) {
+                                deleteQuestion()
+                            },
+                            secondaryButton: .cancel()
+                        )
                     }
                 }
                 
