@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var questionListViewModel = QuestionListViewModel()
+    @StateObject private var userSession = UserSession()
+    @State private var showNewQuestion = false
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        QuestionListView(showNewQuestion: $showNewQuestion)
+            .environmentObject(questionListViewModel)
+            .environmentObject(userSession)
     }
 }
 

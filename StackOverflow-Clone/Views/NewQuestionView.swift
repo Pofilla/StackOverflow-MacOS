@@ -3,6 +3,7 @@ import SwiftUI
 struct NewQuestionView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var questionsViewModel: QuestionListViewModel
+    @EnvironmentObject var userSession: UserSession
 
     @State private var title = ""
     @State private var questionBody = ""
@@ -100,7 +101,7 @@ struct NewQuestionView: View {
             id: UUID().uuidString,
             title: title,
             body: questionBody,
-            authorId: "anonymous",
+            authorId: userSession.username ?? "anonymous",
             createdDate: Date(),
             votes: 0,
             answers: [],
@@ -117,6 +118,10 @@ struct NewQuestionView: View {
     }
 }
 
-#Preview {
-    NewQuestionView(questionsViewModel: QuestionListViewModel())
-} 
+// Preview provider
+struct NewQuestionView_Previews: PreviewProvider {
+    static var previews: some View {
+        NewQuestionView(questionsViewModel: QuestionListViewModel())
+            .environmentObject(UserSession())
+    }
+}

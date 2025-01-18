@@ -157,9 +157,16 @@ struct QuestionRowView: View {
             // Question content
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text(question.title)
-                        .font(.title2.bold())
-                        .foregroundColor(Theme.textColor)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(question.title)
+                            .font(.title2.bold())
+                            .foregroundColor(Theme.textColor)
+                        
+                        // Add author text
+                        Text("by \(question.authorId)")
+                            .font(.caption)
+                            .foregroundColor(Theme.secondaryColor)
+                    }
                     
                     Spacer()
                     
