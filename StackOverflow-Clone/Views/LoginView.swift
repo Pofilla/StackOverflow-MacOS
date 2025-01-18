@@ -1,88 +1,131 @@
 import SwiftUI
 
 struct LoginView: View {
-    @Binding var isPresented: Bool // Binding to control the visibility of the LoginView
-    @State private var isLogin = true // State variable to toggle between login and signup
-    @State private var username = "" // State variable for username
-    @State private var email = "" // State variable for email
-    @State private var password = "" // State variable for password
-    @State private var errorMessage: String? // State variable for error messages
-    @StateObject private var socketService = SocketService() // Initialize SocketService
-    @EnvironmentObject var userSession: UserSession // Add this line at the top
+    @Binding var isPresented: Bool
+    @State private var isLogin = true
+    @State private var username = ""
+    @State private var email = ""
+    @State private var password = ""
+    @State private var errorMessage: String?
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @StateObject private var socketService = SocketService()
+    @EnvironmentObject var userSession: UserSession
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text(isLogin ? "Login" : "Sign Up")
-                .font(.largeTitle)
-                .padding()
-
-            // Username field for signup
-            if !isLogin {
-                TextField("Username", text: $username)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                    .font(.system(size: 16)) // Ensure text size is legible
-            }
-
-            // Email field
-            TextField("Email", text: $email)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .font(.system(size: 16)) // Ensure text size is legible
-
-            // Password field
-            SecureField("Password", text: $password)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .font(.system(size: 16)) // Ensure text size is legible
-
-            // Display error message if any
-            if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .font(.footnote)
-                    .padding(.top, 5)
-            }
-
-            // Text button for Login/Signup
-            Button(action: {
-                if isLogin {
-                    loginUser(email: email, password: password)
-                } else {
-                    signUpUser(username: username, email: email, password: password)
+        ZStack {
+            Theme.backgroundColor.ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                // Header
+                VStack(spacing: 8) {
+                    Text(isLogin ? "Welcome Back" : "Create Account")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(Theme.textColor)
+                    
+                    Text(isLogin ? "Sign in to your account" : "Sign up for a new account")
+                        .font(.system(size: 16))
+                        .foregroundColor(Theme.secondaryColor)
                 }
-            }) {
-                Text(isLogin ? "Login" : "Sign Up")
-                    .font(.headline)
-                    .foregroundColor(.blue) // Change color as needed
-                    .underline() // Add underline to make it look like a link
-            }
-            .padding(.top, 10)
+                .padding(.top, 40)
 
-            // Cancel button
-            Button("Cancel") {
-                isPresented = false // Close the LoginView
+                // Form Fields
+                VStack(spacing: 16) {
+                    if !isLogin {
+                        // Username field for signup
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Username")
+                                .font(.headline)
+                                .foregroundColor(Theme.darkOrange)
+                            TextField("", text: $username)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding()
+                                .background(Theme.cardBackground)
+                                .cornerRadius(Theme.cornerRadius)
+                        }
+                    }
+
+                    // Email field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Email")
+                            .font(.headline)
+                            .foregroundColor(Theme.darkOrange)
+                        TextField("", text: $email)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .padding()
+                            .background(Theme.cardBackground)
+                            .cornerRadius(Theme.cornerRadius)
+                    }
+
+                    // Password field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Password")
+                            .font(.headline)
+                            .foregroundColor(Theme.darkOrange)
+                        SecureField("", text: $password)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .padding()
+                            .background(Theme.cardBackground)
+                            .cornerRadius(Theme.cornerRadius)
+                    }
+                }
+                .padding(.horizontal)
+
+                // Error message
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(Theme.errorColor)
+                        .font(.subheadline)
+                        .padding(.top, 5)
+                }
+
+                // Action Buttons
+                VStack(spacing: 16) {
+                    Button(action: {
+                        if isLogin {
+                            loginUser(email: email, password: password)
+                        } else {
+                            signUpUser(username: username, email: email, password: password)
+                        }
+                    }) {
+                        Text(isLogin ? "Sign In" : "Sign Up")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(Theme.primaryButtonStyle())
+                    .padding(.horizontal)
+                    
+                    Button(action: { isPresented = false }) {
+                        Text("Cancel")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(Theme.secondaryButtonStyle())
+                    .padding(.horizontal)
+                }
+
+                // Toggle between login and signup
+                Button(action: { isLogin.toggle() }) {
+                    Text(isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In")
+                        .font(.subheadline)
+                        .foregroundColor(Theme.primaryColor)
+                }
+                .padding(.top, 8)
+
+                Spacer()
             }
             .padding()
-            .font(.headline)
-            .foregroundColor(.blue)
-
-            // Toggle between login and signup
-            Button(action: {
-                isLogin.toggle() // Toggle the login/signup state
-            }) {
-                Text(isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login")
-                    .font(.footnote)
-                    .foregroundColor(.blue)
-                    .underline()
+            .frame(width: 400)
+            .cornerRadius(Theme.cornerRadius)
+            .shadow(color: Theme.primaryColor.opacity(0.1), radius: 10)
+            
+            // Toast overlay
+            if showToast {
+                ToastView(message: toastMessage, isShowing: $showToast)
+                    .position(x: 200, y: 50)
             }
-            .padding()
         }
-        .padding()
-        .frame(width: 500, height: 500) // Set fixed size for the LoginView
-        .cornerRadius(12) // Rounded corners for the view
-        .shadow(radius: 10) // Add shadow for depth
-        .padding()
+        .frame(width: 500, height: 600)
     }
 
     private func loginUser(email: String, password: String) {
@@ -96,12 +139,17 @@ struct LoginView: View {
         socketService.send(loginRequest) { result in
             switch result {
             case .success(let data):
-                // Handle successful login response
                 if let response = try? JSONDecoder().decode(ServerResponse.self, from: data) {
                     if response.status == "success" {
                         DispatchQueue.main.async {
-                            self.isPresented = false // Close the LoginView on success
-                            userSession.username = response.username // Store the username in the session
+                            self.toastMessage = "Login successful!"
+                            self.showToast = true
+                            userSession.username = response.username
+                            
+                            // Delay closing the view until after the toast
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                self.isPresented = false
+                            }
                         }
                     } else {
                         DispatchQueue.main.async {
@@ -128,11 +176,16 @@ struct LoginView: View {
         socketService.send(signUpRequest) { result in
             switch result {
             case .success(let data):
-                // Handle successful signup response
                 if let response = try? JSONDecoder().decode(ServerResponse.self, from: data) {
                     if response.status == "success" {
                         DispatchQueue.main.async {
-                            self.isPresented = false // Close the LoginView on success
+                            self.toastMessage = "Sign up successful!"
+                            self.showToast = true
+                            
+                            // Delay closing the view until after the toast
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                self.isPresented = false
+                            }
                         }
                     } else {
                         DispatchQueue.main.async {
@@ -149,7 +202,7 @@ struct LoginView: View {
     }
 }
 
-// Preview
 #Preview {
     LoginView(isPresented: .constant(true))
+        .environmentObject(UserSession())
 }

@@ -14,6 +14,17 @@ class AdminPanel:
         self.root.title("Stack Overflow Admin Panel")
         self.root.geometry("1400x800")
         
+        # Configure style for treeview
+        self.style = ttk.Style()
+        self.style.theme_use('default')
+        self.style.configure("Treeview",
+                           background="#2b2b2b",
+                           foreground="white",
+                           fieldbackground="#2b2b2b")
+        self.style.configure("Treeview.Heading",
+                           background="#2b2b2b",
+                           foreground="white")
+        
         # Load data
         self.load_data()
         
@@ -105,19 +116,12 @@ class AdminPanel:
         self.questions_count_label.pack(pady=5)
 
     def create_table(self, parent, columns):
-        # Create a frame for the table
-        table_frame = ctk.CTkFrame(parent)
+        # Create a frame for the table using tkinter Frame instead of CTkFrame
+        table_frame = ttk.Frame(parent)
         table_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # Style configuration for the treeview
-        style = ttk.Style()
-        style.configure("Treeview", background="#2b2b2b", 
-                      fieldbackground="#2b2b2b", foreground="white")
-        style.configure("Treeview.Heading", background="#2b2b2b", 
-                       foreground="white", relief="flat")
-        
         # Create Treeview
-        tree = ttk.Treeview(table_frame, columns=columns, show='headings')
+        tree = ttk.Treeview(table_frame, columns=columns, show='headings', style="Treeview")
         
         # Configure columns
         for col in columns:
@@ -125,10 +129,10 @@ class AdminPanel:
             tree.column(col, width=200)
         
         # Add scrollbars
-        y_scrollbar = ctk.CTkScrollbar(table_frame, command=tree.yview)
+        y_scrollbar = ttk.Scrollbar(table_frame, orient='vertical', command=tree.yview)
         y_scrollbar.pack(side='right', fill='y')
         
-        x_scrollbar = ctk.CTkScrollbar(table_frame, orientation='horizontal', command=tree.xview)
+        x_scrollbar = ttk.Scrollbar(table_frame, orient='horizontal', command=tree.xview)
         x_scrollbar.pack(side='bottom', fill='x')
         
         tree.configure(yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
