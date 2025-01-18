@@ -26,18 +26,25 @@ class StackOverflowServer:
             pickle.dump(self.questions, f)
 
     def load_data(self):
+        print("Attempting to load database...")
         try:
             with open('server/database.pkl', 'rb') as f:
                 data = pickle.load(f)
-                # Ensure the data is a dictionary with the expected keys
-                if isinstance(data, dict) and 'questions' in data and 'users' in data:
+                print(f"Successfully loaded database with {len(data.get('questions', []))} questions and {len(data.get('users', {}))} users")
+                if isinstance(data, dict):
+                    # Initialize missing keys if they don't exist
+                    if 'questions' not in data:
+                        data['questions'] = []
+                    if 'users' not in data:
+                        data['users'] = {}
                     return data
-                else:
-                    print("Warning: Data structure is not as expected. Initializing empty data.")
-                    return {'questions': [], 'users': {}}
         except FileNotFoundError:
-            print("Warning: Database file not found. Initializing empty data.")
-            return {'questions': [], 'users': {}}
+            print("Warning: Database file not found. Creating new database.")
+            initial_data = {'questions': [], 'users': {}}
+            # Save the initial data immediately
+            with open('server/database.pkl', 'wb') as f:
+                pickle.dump(initial_data, f)
+            return initial_data
         except Exception as e:
             print(f"Error loading data: {e}")
             return {'questions': [], 'users': {}}
@@ -108,7 +115,7 @@ class StackOverflowServer:
                 print(f"Adding question: {question}")
                 question['created_date'] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
                 self.questions.insert(0, question)
-                self.save_questions()
+                self.save_data()  # Changed from save_questions() to save_data()
                 print(f"Questions after adding: {len(self.questions)}")
                 return {
                     'status': 'success',
@@ -236,11 +243,17 @@ class StackOverflowServer:
         return self.users.get(email)  # Return user data if email exists, otherwise None
 
     def save_data(self):
-        with open('server/database.pkl', 'wb') as f:
-            pickle.dump({
-                'questions': self.questions,
-                'users': self.users  # Ensure users are saved as a dictionary
-            }, f)
+        print("Saving data to database...")
+        try:
+            with open('server/database.pkl', 'wb') as f:
+                data_to_save = {
+                    'questions': self.questions,
+                    'users': self.users
+                }
+                pickle.dump(data_to_save, f)
+            print(f"Data saved successfully - {len(self.questions)} questions and {len(self.users)} users")
+        except Exception as e:
+            print(f"Error saving data: {e}")
 
 if __name__ == '__main__':
     try:
