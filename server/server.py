@@ -224,6 +224,27 @@ class StackOverflowServer:
                     'message': 'Account created successfully'
                 }
             
+            elif action == 'delete_question':
+                question_id = request.get('question_id')
+                author_id = request.get('author_id')
+                
+                # Find and remove the question
+                questions = self.data.get('questions', [])
+                updated_questions = [q for q in questions if q['id'] != question_id]
+                
+                # Update both in-memory and file storage
+                self.questions = updated_questions
+                self.data['questions'] = updated_questions
+                
+                # Save to file immediately
+                self.save_data()
+                
+                return {
+                    'status': 'success',
+                    'message': 'Question deleted successfully',
+                    'data': updated_questions
+                }
+            
             else:
                 return {
                     'status': 'error',
@@ -252,8 +273,10 @@ class StackOverflowServer:
                 }
                 pickle.dump(data_to_save, f)
             print(f"Data saved successfully - {len(self.questions)} questions and {len(self.users)} users")
+            return True
         except Exception as e:
             print(f"Error saving data: {e}")
+            return False
 
 if __name__ == '__main__':
     try:

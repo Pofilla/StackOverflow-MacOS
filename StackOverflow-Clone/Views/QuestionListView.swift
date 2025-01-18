@@ -5,6 +5,8 @@ struct QuestionListView: View {
     @Binding var showNewQuestion: Bool
     @State private var searchText = ""
     @State private var isPressed: Bool = false // State to track button press
+    @State private var showDeleteConfirmation = false // State to track delete confirmation alert
+    @State private var isHovering = false // State to track button hover
 
     var filteredQuestions: [Question] {
         let filtered = searchText.isEmpty ? viewModel.questions :
@@ -134,6 +136,10 @@ struct QuestionRowView: View {
     @EnvironmentObject var viewModel: QuestionListViewModel
     let question: Question
     
+    // Add these state variables
+    @State private var showDeleteConfirmation = false
+    @State private var isHovering = false
+    
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             // Voting controls
@@ -171,14 +177,26 @@ struct QuestionRowView: View {
                     Spacer()
                     
                     // Add delete menu for question author
-                    if true {
-                        Menu {
-                            Button(role: .destructive, action: deleteQuestion) {
-                                Label("Delete Question", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .foregroundColor(Theme.secondaryColor)
+                    if question.authorId == "anonymous" {
+                        Button(action: {
+                            showDeleteConfirmation = true
+                        }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .onHover { hovering in
+                            isHovering = hovering
+                        }
+                        .alert(isPresented: $showDeleteConfirmation) {
+                            Alert(
+                                title: Text("Confirm Deletion"),
+                                message: Text("Are you sure you want to delete this question?"),
+                                primaryButton: .destructive(Text("Delete")) {
+                                    deleteQuestion()
+                                },
+                                secondaryButton: .cancel()
+                            )
                         }
                     }
                 }
