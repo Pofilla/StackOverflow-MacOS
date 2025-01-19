@@ -6,7 +6,6 @@ import json
 
 # Set theme and color scheme
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
 
 
 class AdminPanel:
@@ -17,14 +16,14 @@ class AdminPanel:
 
         # Configure style for treeview
         self.style = ttk.Style()
-        self.style.theme_use('default')
+        self.style.theme_use('clam')
         self.style.configure(
             "Treeview",
-            background="#2b2b2b",
-            foreground="white",
-            fieldbackground="#2b2b2b",
+            background="#ffcc80",  # Light orange background
+            foreground="black",
+            fieldbackground="#ffcc80",
         )
-        self.style.configure("Treeview.Heading", background="#2b2b2b", foreground="white")
+        self.style.configure("Treeview.Heading", background="#ff9800", foreground="white", font=('Arial', 12, 'bold'))
 
         # Load data
         self.load_data()
@@ -42,7 +41,8 @@ class AdminPanel:
         ctk.CTkLabel(
             self.sidebar,
             text="Admin Panel",
-            font=ctk.CTkFont(size=20, weight="bold"),
+            font=ctk.CTkFont(size=24, weight="bold"),
+            text_color="white"
         ).pack(pady=20, padx=10)
 
         # Navigation buttons
@@ -63,7 +63,9 @@ class AdminPanel:
             self.sidebar,
             text="Refresh Data",
             command=self.refresh_data,
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(size=16),
+            fg_color="#ff9800",  # Orange button color
+            hover_color="#e65100"  # Darker orange on hover
         ).pack(side="bottom", pady=20, padx=20)
 
     def create_nav_buttons(self):
@@ -77,6 +79,8 @@ class AdminPanel:
             text="Users",
             command=self.show_users,
             font=ctk.CTkFont(size=14),
+            fg_color="#ff9800",  # Orange button color
+            hover_color="#e65100"  # Darker orange on hover
         )
         users_btn.pack(pady=5, padx=20)
         self.nav_buttons.append(users_btn)
@@ -86,6 +90,8 @@ class AdminPanel:
             text="Questions",
             command=self.show_questions,
             font=ctk.CTkFont(size=14),
+            fg_color="#ff9800",  # Orange button color
+            hover_color="#e65100"  # Darker orange on hover
         )
         questions_btn.pack(pady=5, padx=20)
         self.nav_buttons.append(questions_btn)
@@ -98,6 +104,7 @@ class AdminPanel:
             stats_frame,
             text="Statistics",
             font=ctk.CTkFont(size=16, weight="bold"),
+            text_color="white"
         ).pack(pady=10)
 
         # Users count
@@ -105,6 +112,7 @@ class AdminPanel:
             stats_frame,
             text=f"Total Users: {len(self.users)}",
             font=ctk.CTkFont(size=14),
+            text_color="white"
         )
         self.users_count_label.pack(pady=5)
 
@@ -113,6 +121,7 @@ class AdminPanel:
             stats_frame,
             text=f"Total Questions: {len(self.questions)}",
             font=ctk.CTkFont(size=14),
+            text_color="white"
         )
         self.questions_count_label.pack(pady=5)
 
@@ -158,7 +167,7 @@ class AdminPanel:
 
         # Create users table
         columns = ("Username", "Email", "Created Date", "Actions")
-        self.users_tree = self.create_table(self.main_content, columns)
+        self.users_tree = self.create_table(self.main_content, columns)  # Ensure users_tree is created
         self.populate_users()
 
     def show_questions(self):
@@ -185,8 +194,13 @@ class AdminPanel:
         try:
             with open("server/database.pkl", "rb") as f:
                 self.data = pickle.load(f)
-                self.users = self.data.get("users", {})
-                self.questions = self.data.get("questions", [])
+                # Ensure data is a dictionary
+                if isinstance(self.data, list):
+                    self.users = {}
+                    self.questions = self.data  # Assuming the list contains questions
+                else:
+                    self.users = self.data.get("users", {})
+                    self.questions = self.data.get("questions", [])
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load database: {str(e)}")
             self.data = {"users": {}, "questions": []}
@@ -194,6 +208,7 @@ class AdminPanel:
             self.questions = []
 
     def populate_users(self):
+        # Check if users_tree is initialized
         if not hasattr(self, "users_tree") or self.users_tree is None:
             messagebox.showerror("Error", "Users view is not initialized.")
             return
@@ -217,6 +232,7 @@ class AdminPanel:
             )
 
     def populate_questions(self):
+        # Check if questions_tree is initialized
         if not hasattr(self, "questions_tree") or self.questions_tree is None:
             messagebox.showerror("Error", "Questions view is not initialized.")
             return
