@@ -23,6 +23,13 @@ struct AnswerRequest: Codable {
     let questionId: String
 }
 
+struct DeleteAnswerRequest: Codable {
+    let action: String
+    let answerId: String
+    let questionId: String
+    let authorId: String
+}
+
 class QuestionListViewModel: ObservableObject {
     @Published var questions: [Question] = []
     @Published var isLoading = false
@@ -120,9 +127,7 @@ class QuestionListViewModel: ObservableObject {
         }
     }
     
-    func deleteAnswer(_ answerId: String, from questionId: String, authorId: String) {
-        print("🗑️ Deleting answer: \(answerId) from question: \(questionId)")
-        
+    func deleteAnswer(questionId: String, answerId: String, authorId: String) {
         let request = DeleteAnswerRequest(
             action: "delete_answer",
             answerId: answerId,
@@ -130,36 +135,28 @@ class QuestionListViewModel: ObservableObject {
             authorId: authorId
         )
         
-        // Send delete request to server first
         socketService.send(request) { [weak self] result in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
-                    DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data):
+                    do {
+                        let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
                         if response.status == "success" {
-                            print("✅ Answer deleted successfully on server")
-                            // Update local state with server response
+                            print("✅ Answer deleted successfully")
                             if let updatedQuestions = response.data {
                                 self?.questions = updatedQuestions
                             }
                         } else {
                             print("❌ Server returned error: \(response.message ?? "Unknown error")")
                             self?.errorMessage = response.message
-                            // Refresh questions to ensure consistency
-                            self?.loadQuestions()
                         }
+                    } catch {
+                        print("❌ Decoding error: \(error)")
+                        self?.errorMessage = error.localizedDescription
                     }
-                } catch {
-                    print("❌ Decoding error: \(error)")
+                case .failure(let error):
+                    print("❌ Network error: \(error)")
                     self?.errorMessage = error.localizedDescription
-                    self?.loadQuestions()
-                }
-            case .failure(let error):
-                print("❌ Failed to delete answer: \(error)")
-                DispatchQueue.main.async {
-                    self?.errorMessage = error.localizedDescription
-                    self?.loadQuestions()
                 }
             }
         }

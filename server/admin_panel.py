@@ -248,7 +248,7 @@ class AdminPanel:
                 "end",
                 values=(
                     question.get("title", "N/A"),
-                    question.get("authorId", "N/A"),
+                    question.get("author_id", question.get("authorId", "N/A")),  # Check both author_id and authorId
                     question.get("created_date", "N/A"),
                     len(question.get("answers", [])),
                     ", ".join(question.get("tags", [])),
@@ -270,19 +270,21 @@ class AdminPanel:
         messagebox.showinfo("Success", "Data refreshed successfully!")
 
     def save_question(self, question_data):
-        # Assuming question_data is a dictionary with the question details
         try:
-            # Load existing data
             with open("server/database.pkl", "rb") as f:
                 data = pickle.load(f)
 
-            # Check if data is a dictionary
             if isinstance(data, dict):
+                # Ensure the author_id is properly set
+                if "authorId" in question_data:
+                    question_data["author_id"] = question_data["authorId"]
+                elif "author_id" in question_data:
+                    question_data["authorId"] = question_data["author_id"]
+                
                 questions = data.get("questions", [])
-                questions.append(question_data)  # Add the new question
-                data["questions"] = questions  # Update the questions list
+                questions.append(question_data)
+                data["questions"] = questions
 
-                # Save back to the database
                 with open("server/database.pkl", "wb") as f:
                     pickle.dump(data, f)
 

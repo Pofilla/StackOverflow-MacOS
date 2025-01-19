@@ -155,20 +155,40 @@ class StackOverflowServer:
                 return {'status': 'success', 'data': self.questions}
 
             elif action == 'delete_answer':
-                answer_id = request.get('answer_id')
-                question_id = request.get('question_id')
+                answer_id = request.get('answerId')
+                question_id = request.get('questionId')
+                author_id = request.get('authorId')
                 
-                print(f"Deleting answer {answer_id} from question {question_id}")
+                # Find the question
                 for question in self.questions:
                     if question['id'] == question_id:
-                        question['answers'] = [a for a in question['answers'] if a['id'] != answer_id]
-                        break
+                        # Find the answer and verify the author
+                        answer_to_delete = None
+                        for answer in question.get('answers', []):
+                            if answer['id'] == answer_id:
+                                # Verify the author
+                                if answer.get('authorId') != author_id:
+                                    return {
+                                        'status': 'error',
+                                        'message': 'Unauthorized: Only the author can delete this answer'
+                                    }
+                                answer_to_delete = answer
+                                break
+                        
+                        if answer_to_delete:
+                            # Remove the answer
+                            question['answers'] = [a for a in question['answers'] if a['id'] != answer_id]
+                            # Save the changes
+                            self.save_data()
+                            return {
+                                'status': 'success',
+                                'message': 'Answer deleted successfully',
+                                'data': self.questions
+                            }
                 
-                self.save_questions()
                 return {
-                    'status': 'success',
-                    'data': self.questions,
-                    'message': 'Answer deleted successfully'
+                    'status': 'error',
+                    'message': 'Answer not found'
                 }
             
             elif action == 'vote':
