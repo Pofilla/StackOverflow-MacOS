@@ -3,6 +3,10 @@ import json
 import threading
 from datetime import datetime, timezone
 import pickle
+import signal
+import sys
+import os
+import shutil
 
 class StackOverflowServer:
     def __init__(self):
@@ -13,6 +17,17 @@ class StackOverflowServer:
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.host = '127.0.0.1'
         self.port = 54321
+        # Add signal handlers for graceful shutdown
+        signal.signal(signal.SIGINT, self.shutdown_handler)
+        signal.signal(signal.SIGTERM, self.shutdown_handler)
+
+    def shutdown_handler(self, signum, frame):
+        """Handle shutdown signals gracefully"""
+        print("\nReceived shutdown signal. Saving data and closing server...")
+        self.save_data()  # Save data before shutting down
+        if hasattr(self, 'server_socket'):
+            self.server_socket.close()
+        sys.exit(0)
 
     def load_questions(self):
         try:
@@ -70,6 +85,8 @@ class StackOverflowServer:
         except Exception as e:
             print(f"Server error: {e}")
         finally:
+            print("Saving data before shutting down...")
+            self.save_data()  # Save data before shutting down
             self.server_socket.close()
 
     def handle_client(self, client_socket, address):
@@ -266,12 +283,28 @@ class StackOverflowServer:
     def save_data(self):
         print("Saving data to database...")
         try:
-            with open('server/database.pkl', 'wb') as f:
-                data_to_save = {
-                    'questions': self.questions,
-                    'users': self.users
-                }
+            # Ensure data structure is correct
+            data_to_save = {
+                'questions': self.questions,
+                'users': self.users
+            }
+            
+            # Create a backup of the existing file first
+            try:
+                if os.path.exists('server/database.pkl'):
+                    backup_path = 'server/database.backup.pkl'
+                    shutil.copy2('server/database.pkl', backup_path)
+            except Exception as e:
+                print(f"Warning: Could not create backup: {e}")
+
+            # Save the data using a temporary file first
+            temp_file = 'server/database.temp.pkl'
+            with open(temp_file, 'wb') as f:
                 pickle.dump(data_to_save, f)
+            
+            # If temporary file was written successfully, rename it to the actual file
+            os.replace(temp_file, 'server/database.pkl')
+            
             print(f"Data saved successfully - {len(self.questions)} questions and {len(self.users)} users")
             return True
         except Exception as e:

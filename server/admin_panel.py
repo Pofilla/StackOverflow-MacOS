@@ -269,6 +269,45 @@ class AdminPanel:
         # Show success message
         messagebox.showinfo("Success", "Data refreshed successfully!")
 
+    def save_question(self, question_data):
+        # Assuming question_data is a dictionary with the question details
+        try:
+            # Load existing data
+            with open("server/database.pkl", "rb") as f:
+                data = pickle.load(f)
+
+            # Check if data is a dictionary
+            if isinstance(data, dict):
+                questions = data.get("questions", [])
+                questions.append(question_data)  # Add the new question
+                data["questions"] = questions  # Update the questions list
+
+                # Save back to the database
+                with open("server/database.pkl", "wb") as f:
+                    pickle.dump(data, f)
+
+                print(f"Data saved successfully - {len(questions)} questions and {len(data.get('users', {}))} users")
+                messagebox.showinfo("Success", "Question saved successfully!")
+            else:
+                print("Error: Loaded data is not a dictionary.")
+        except Exception as e:
+            print(f"Error saving question: {str(e)}")
+            messagebox.showerror("Error", f"Failed to save question: {str(e)}")
+
+    def submit_question(self):
+        question_text = self.question_entry.get()  # Assuming you have an entry for the question
+        if question_text:
+            question_data = {
+                "title": question_text,
+                "authorId": "user@example.com",  # Replace with actual user ID
+                "created_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "answers": [],
+                "tags": []  # Add tags if applicable
+            }
+            self.save_question(question_data)
+        else:
+            messagebox.showwarning("Warning", "Please enter a question.")
+
     def run(self):
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.mainloop()

@@ -134,11 +134,16 @@ struct EmptyStateView: View {
 
 struct QuestionRowView: View {
     @EnvironmentObject var viewModel: QuestionListViewModel
+    @EnvironmentObject var userSession: UserSession  // Add this line
     let question: Question
     
-    // Add these state variables
     @State private var showDeleteConfirmation = false
     @State private var isHovering = false
+    
+    private var canDelete: Bool {
+        // Check if current user is the author
+        return userSession.username == question.authorId
+    }
     
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -168,7 +173,6 @@ struct QuestionRowView: View {
                             .font(.title2.bold())
                             .foregroundColor(Theme.textColor)
                         
-                        // Add author text
                         Text("by \(question.authorId)")
                             .font(.caption)
                             .foregroundColor(Theme.secondaryColor)
@@ -176,26 +180,28 @@ struct QuestionRowView: View {
                     
                     Spacer()
                     
-                    // Always show delete button without condition
-                    Button(action: {
-                        showDeleteConfirmation = true
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .onHover { hovering in
-                        isHovering = hovering
-                    }
-                    .alert(isPresented: $showDeleteConfirmation) {
-                        Alert(
-                            title: Text("Confirm Deletion"),
-                            message: Text("Are you sure you want to delete this question?"),
-                            primaryButton: .destructive(Text("Delete")) {
-                                deleteQuestion()
-                            },
-                            secondaryButton: .cancel()
-                        )
+                    // Only show delete button if user is the author
+                    if canDelete {
+                        Button(action: {
+                            showDeleteConfirmation = true
+                        }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(isHovering ? Theme.primaryColor : Theme.secondaryColor)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .onHover { hovering in
+                            isHovering = hovering
+                        }
+                        .alert(isPresented: $showDeleteConfirmation) {
+                            Alert(
+                                title: Text("Confirm Deletion"),
+                                message: Text("Are you sure you want to delete this question?"),
+                                primaryButton: .destructive(Text("Delete")) {
+                                    deleteQuestion()
+                                },
+                                secondaryButton: .cancel()
+                            )
+                        }
                     }
                 }
                 
