@@ -32,14 +32,17 @@ class QuestionListViewModel: ObservableObject {
     
     private var lastUpdate: String?
     private let socketService = SocketService()
+    private var refreshTimer: Timer?
+    private let refreshInterval: TimeInterval = 0.1 // 0.1 seconds
     
     init() {
         print("QuestionListViewModel initialized")
         loadQuestions()
+        startAutoRefresh() // Start auto-refresh when initialized
     }
     
     deinit {
-        // No need to call stopAutoRefresh() as it's not implemented in the original code
+        stopAutoRefresh()
     }
     
     func loadQuestions() {
@@ -294,10 +297,10 @@ class QuestionListViewModel: ObservableObject {
     
     func startAutoRefresh() {
         // Cancel any existing timer
-        refreshTimer?.invalidate()
+        stopAutoRefresh()
         
-        // Create new timer that fires every 0.25 seconds
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+        // Create new timer that fires every 0.1 seconds
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
             self?.loadQuestions()
         }
     }
@@ -311,9 +314,9 @@ class QuestionListViewModel: ObservableObject {
 }
 
 // Update server response structure
-struct ServerResponse: Codable {
-    let status: String
-    let data: [Question]?
-    let message: String?
-    let lastModified: String?
-} 
+// struct ServerResponse: Codable {
+//     let status: String
+//     let data: [Question]?
+//     let message: String?
+//     let lastModified: String?
+// } 

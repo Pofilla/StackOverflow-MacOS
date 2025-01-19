@@ -3,6 +3,7 @@ import Foundation
 struct ServerResponse: Codable {
     let status: String
     let message: String?
-    let username: String? // Optional username field for login responses
-    let data: [Question]? // Add this line if you expect a data array of questions
+    let username: String? // For login responses
+    let data: [Question]? // For question-related responses
+    let lastModified: String? // For tracking updates
 }
