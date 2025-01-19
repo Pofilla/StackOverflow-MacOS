@@ -1,10 +1,11 @@
 // Request types for the Stack Overflow clone
-// struct DeleteAnswerRequest: Codable {
-//     let action: String
-//     let answerId: String
-//     let questionId: String
-//     let authorId: String
-// }
+// Remove this commented out version completely
+/* struct DeleteAnswerRequest: Codable {
+    let action: String
+    let answerId: String
+    let questionId: String
+    let authorId: String
+} */
 
 struct SortQuestionsRequest: Codable {
     let action: String
@@ -63,5 +64,20 @@ struct SignUpRequest: Codable {
         case username
         case email
         case password
+    }
+}
+
+// This is the only DeleteAnswerRequest we want to keep
+struct DeleteAnswerRequest: Codable {
+    let action: String
+    let answerId: String
+    let questionId: String
+    let authorId: String
+    
+    enum CodingKeys: String, CodingKey {
+        case action
+        case answerId = "answerId"
+        case questionId = "questionId"
+        case authorId = "authorId"
     }
 } 

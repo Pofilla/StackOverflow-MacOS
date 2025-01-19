@@ -70,6 +70,7 @@ struct AnswerView: View {
     
     private func deleteAnswer() {
         isDeleting = true
+        print("Attempting to delete answer. Author ID: \(answer.authorId)")
         viewModel.deleteAnswer(
             questionId: questionId,
             answerId: answer.id,

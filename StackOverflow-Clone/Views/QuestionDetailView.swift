@@ -170,13 +170,14 @@ struct AddAnswerSheet: View {
         let answer = Answer(
             id: UUID().uuidString,
             questionId: questionId,
-            authorId: userSession.username ?? "anonymous",  // Use username if available
+            authorId: userSession.username ?? "anonymous",  // Make sure this matches the logged-in user
             body: answerBody.trimmingCharacters(in: .whitespacesAndNewlines),
             createdDate: Date(),
             votes: 0,
             isAccepted: false
         )
         
+        print("Creating answer with author ID: \(answer.authorId)")  // Add this debug line
         viewModel.addAnswer(answer, to: questionId)
         dismiss()
     }

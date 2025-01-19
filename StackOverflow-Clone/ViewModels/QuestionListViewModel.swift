@@ -23,13 +23,6 @@ struct AnswerRequest: Codable {
     let questionId: String
 }
 
-struct DeleteAnswerRequest: Codable {
-    let action: String
-    let answerId: String
-    let questionId: String
-    let authorId: String
-}
-
 class QuestionListViewModel: ObservableObject {
     @Published var questions: [Question] = []
     @Published var isLoading = false
@@ -128,6 +121,8 @@ class QuestionListViewModel: ObservableObject {
     }
     
     func deleteAnswer(questionId: String, answerId: String, authorId: String) {
+        print("🗑️ Deleting answer: \(answerId) from question: \(questionId)")
+        
         let request = DeleteAnswerRequest(
             action: "delete_answer",
             answerId: answerId,
@@ -146,6 +141,8 @@ class QuestionListViewModel: ObservableObject {
                             if let updatedQuestions = response.data {
                                 self?.questions = updatedQuestions
                             }
+                            // Dismiss the view if needed
+                            // self?.presentationMode.wrappedValue.dismiss()
                         } else {
                             print("❌ Server returned error: \(response.message ?? "Unknown error")")
                             self?.errorMessage = response.message
@@ -263,6 +260,12 @@ class QuestionListViewModel: ObservableObject {
             case .failure(let error):
                 print("❌ Network error: \(error)")
             }
+        }
+    }
+    
+    func questionsWithTag(_ tag: String) -> [Question] {
+        questions.filter { question in
+            question.tags.contains(tag)
         }
     }
     

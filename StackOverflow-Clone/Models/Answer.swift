@@ -11,8 +11,8 @@ struct Answer: Codable, Identifiable {
     
     enum CodingKeys: String, CodingKey {
         case id
-        case questionId = "question_id"
-        case authorId = "author_id"
+        case questionId = "questionId"
+        case authorId = "authorId"
         case body
         case createdDate = "created_date"
         case votes

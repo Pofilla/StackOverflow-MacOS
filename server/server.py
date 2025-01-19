@@ -159,6 +159,9 @@ class StackOverflowServer:
                 question_id = request.get('questionId')
                 author_id = request.get('authorId')
                 
+                print(f"Deleting answer {answer_id} from question {question_id}")
+                print(f"Request author_id: {author_id}")
+                
                 # Find the question
                 for question in self.questions:
                     if question['id'] == question_id:
@@ -166,11 +169,16 @@ class StackOverflowServer:
                         answer_to_delete = None
                         for answer in question.get('answers', []):
                             if answer['id'] == answer_id:
+                                # Get author ID from either authorId or author_id
+                                answer_author = answer.get('authorId') or answer.get('author_id')
+                                print(f"Answer author_id: {answer_author}")
+                                print(f"Answer full data: {answer}")
+                                
                                 # Verify the author
-                                if answer.get('authorId') != author_id:
+                                if answer_author != author_id:
                                     return {
                                         'status': 'error',
-                                        'message': 'Unauthorized: Only the author can delete this answer'
+                                        'message': f"Unauthorized: Only the author can delete this answer. Request author: {author_id}, Answer author: {answer_author}"
                                     }
                                 answer_to_delete = answer
                                 break
@@ -179,7 +187,7 @@ class StackOverflowServer:
                             # Remove the answer
                             question['answers'] = [a for a in question['answers'] if a['id'] != answer_id]
                             # Save the changes
-                            self.save_data()
+                            self.save_data()  # Make sure to save after deletion
                             return {
                                 'status': 'success',
                                 'message': 'Answer deleted successfully',
@@ -303,32 +311,26 @@ class StackOverflowServer:
     def save_data(self):
         print("Saving data to database...")
         try:
-            # Ensure data structure is correct
             data_to_save = {
                 'questions': self.questions,
                 'users': self.users
             }
             
-            # Create a backup of the existing file first
-            try:
-                if os.path.exists('server/database.pkl'):
-                    backup_path = 'server/database.backup.pkl'
-                    shutil.copy2('server/database.pkl', backup_path)
-            except Exception as e:
-                print(f"Warning: Could not create backup: {e}")
-
-            # Save the data using a temporary file first
+            # Save to a temporary file first
             temp_file = 'server/database.temp.pkl'
             with open(temp_file, 'wb') as f:
                 pickle.dump(data_to_save, f)
             
-            # If temporary file was written successfully, rename it to the actual file
+            # If save was successful, replace the original file
             os.replace(temp_file, 'server/database.pkl')
             
             print(f"Data saved successfully - {len(self.questions)} questions and {len(self.users)} users")
             return True
         except Exception as e:
             print(f"Error saving data: {e}")
+            # Clean up temp file if it exists
+            if os.path.exists('server/database.temp.pkl'):
+                os.remove('server/database.temp.pkl')
             return False
 
 if __name__ == '__main__':
