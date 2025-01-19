@@ -4,10 +4,12 @@ import SwiftUI
 struct QuestionRequest: Codable {
     let action: String
     let question: Question?
+    let lastUpdate: String?
     
-    init(action: String, question: Question? = nil) {
+    init(action: String, question: Question? = nil, lastUpdate: String? = nil) {
         self.action = action
         self.question = question
+        self.lastUpdate = lastUpdate
     }
 }
 
@@ -28,6 +30,7 @@ class QuestionListViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
+    private var lastUpdate: String?
     private let socketService = SocketService()
     
     init() {
@@ -35,25 +38,45 @@ class QuestionListViewModel: ObservableObject {
         loadQuestions()
     }
     
+    deinit {
+        // No need to call stopAutoRefresh() as it's not implemented in the original code
+    }
+    
     func loadQuestions() {
-        print("⬇️ Loading questions...")
-        isLoading = true
+        // Don't show loading indicator for auto-refresh
+        let wasEmpty = questions.isEmpty
+        if wasEmpty {
+            isLoading = true
+        }
         
-        let request = QuestionRequest(action: "get_questions")
+        // Include last update time in request
+        let request = QuestionRequest(
+            action: "get_questions",
+            lastUpdate: lastUpdate
+        )
+        
         socketService.send(request) { [weak self] result in
             DispatchQueue.main.async {
-                self?.isLoading = false
+                if wasEmpty {
+                    self?.isLoading = false
+                }
                 
                 switch result {
                 case .success(let data):
                     do {
-                        print("📦 Received data: \(String(data: data, encoding: .utf8) ?? "")")
                         let response = try JSONDecoder.shared.decode(ServerResponse.self, from: data)
-                        if response.status == "success", let questions = response.data {
-                            self?.questions = questions
-                            print("✅ Loaded \(questions.count) questions")
+                        if response.status == "success" {
+                            // Update lastUpdate timestamp
+                            self?.lastUpdate = response.lastModified
+                            
+                            // Only update questions if there are changes
+                            if let questions = response.data {
+                                self?.questions = questions
+                                print("✅ Updated questions list with \(questions.count) questions")
+                            }
                         } else {
                             print("❌ Server returned error: \(response.message ?? "Unknown error")")
+                            self?.errorMessage = response.message
                         }
                     } catch {
                         print("❌ Decoding error: \(error)")
@@ -269,5 +292,28 @@ class QuestionListViewModel: ObservableObject {
         }
     }
     
+    func startAutoRefresh() {
+        // Cancel any existing timer
+        refreshTimer?.invalidate()
+        
+        // Create new timer that fires every 0.25 seconds
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            self?.loadQuestions()
+        }
+    }
+    
+    func stopAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+    }
+    
     // Similar implementations for other actions
+}
+
+// Update server response structure
+struct ServerResponse: Codable {
+    let status: String
+    let data: [Question]?
+    let message: String?
+    let lastModified: String?
 } 

@@ -20,6 +20,8 @@ class StackOverflowServer:
         # Add signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.shutdown_handler)
         signal.signal(signal.SIGTERM, self.shutdown_handler)
+        # Add last_modified timestamp to track changes
+        self.last_modified = datetime.now(timezone.utc)
 
     def shutdown_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""
@@ -121,13 +123,32 @@ class StackOverflowServer:
         
         try:
             if action == 'get_questions':
+                # Add client's last update time to request
+                client_last_update = request.get('last_update')
+                
+                # If client provides last update time and no changes since then
+                if client_last_update:
+                    try:
+                        client_timestamp = datetime.fromisoformat(client_last_update)
+                        if client_timestamp >= self.last_modified:
+                            return {
+                                'status': 'success',
+                                'data': None,  # No changes
+                                'last_modified': self.last_modified.isoformat()
+                            }
+                    except (ValueError, TypeError):
+                        pass  # Invalid timestamp, continue with normal response
+                
                 print(f"Returning {len(self.questions)} questions")
                 return {
                     'status': 'success',
-                    'data': self.questions
+                    'data': self.questions,
+                    'last_modified': self.last_modified.isoformat()
                 }
             
             elif action == 'add_question':
+                # Update last_modified when data changes
+                self.last_modified = datetime.now(timezone.utc)
                 question = request.get('question')
                 print(f"Adding question: {question}")
                 question['created_date'] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -140,6 +161,8 @@ class StackOverflowServer:
                 }
             
             elif action == 'add_answer':
+                # Update last_modified when data changes
+                self.last_modified = datetime.now(timezone.utc)
                 question_id = request.get('questionId')
                 answer = request.get('answer')
                 answer['created_date'] = datetime.now(timezone.utc).isoformat()
@@ -155,6 +178,8 @@ class StackOverflowServer:
                 return {'status': 'success', 'data': self.questions}
 
             elif action == 'delete_answer':
+                # Update last_modified when data changes
+                self.last_modified = datetime.now(timezone.utc)
                 answer_id = request.get('answerId')
                 question_id = request.get('questionId')
                 author_id = request.get('authorId')
